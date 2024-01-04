@@ -37,7 +37,7 @@ volumes:
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './dashboard/src/'
+      device: './dashboard/app/'
   DB:
     driver: local
     driver_opts:
