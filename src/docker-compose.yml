@@ -1,0 +1,50 @@
+version: "3"
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend/.
+    networks:
+      - mynetwork
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_volume:/app
+
+  dashboard:
+    container_name: dashboard
+    build:
+      context: ./dashboard/.
+    networks:
+      - mynetwork
+    ports:
+      - "3000:3000"
+    volumes:
+      - dashboard_volume:/app
+    depends_on:
+      - backend
+
+volumes:
+  backend_volume:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: 'bind'
+      device: './backend/'
+
+  dashboard_volume:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: 'bind'
+      device: './dashboard/src/'
+  DB:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: 'bind'
+      device: '.'
+
+networks:
+  mynetwork:
+    driver: bridge
