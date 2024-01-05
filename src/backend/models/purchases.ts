@@ -1,24 +1,22 @@
 "use strict";
-import { Model, UUIDV4 } from "sequelize";
+import { Model } from "sequelize";
 
-enum IpTvType {
-  Basic = "basic",
-  Premium = "premium",
-}
-
-interface ProductAttributes {
+interface PurchasesAttributes {
   id: number;
-  iptv_url: string;
-  type: IpTvType;
+  product_id: number;
+  Costumer_id: number;
   created_at: Date;
   updated_at: Date;
 }
 
 module.exports = (sequelize: any, DataTypes: any) => {
-  class Product extends Model<ProductAttributes> implements ProductAttributes {
+  class purchases
+    extends Model<PurchasesAttributes>
+    implements PurchasesAttributes
+  {
     id!: number;
-    iptv_url!: string;
-    type!: IpTvType;
+    product_id!: number;
+    Costumer_id!: number;
     created_at!: Date;
     updated_at!: Date;
     /**
@@ -28,10 +26,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
      */
     static associate(models: any) {
       // define association here
-      Product.belongsToMany(models.Costumers, { through: "purchases" });
     }
   }
-  Product.init(
+  purchases.init(
     {
       id: {
         type: DataTypes.BIGINT,
@@ -39,14 +36,21 @@ module.exports = (sequelize: any, DataTypes: any) => {
         allowNull: false,
         primaryKey: true,
       },
-      iptv_url: {
-        type: DataTypes.STRING,
+      product_id: {
+        type: DataTypes.BIGINT,
         allowNull: false,
+        references: {
+          model: "Product",
+          key: "id",
+        },
       },
-      type: {
-        type: DataTypes.ENUM(...Object.values(IpTvType)),
-        defaultValue: IpTvType.Basic,
+      Costumer_id: {
+        type: DataTypes.BIGINT,
         allowNull: false,
+        references: {
+          model: "Costumers",
+          key: "id",
+        },
       },
       created_at: {
         type: DataTypes.DATE,
@@ -61,8 +65,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     },
     {
       sequelize,
-      modelName: "Product",
+      modelName: "purchases",
     }
   );
-  return Product;
+  return purchases;
 };
