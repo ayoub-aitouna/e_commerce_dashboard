@@ -7,16 +7,9 @@ module.exports =
     "username": process.env.DB_USER,
     "password": process.env.DB_PASS,
     "database": process.env.DB_NAME,
-    "host": "ep-ancient-bar-26816035.us-east-2.aws.neon.tech",
-    "dialect": "postgres",
-    "schema": "public",
-    "dialectOptions": {
-      "application_name": "ep-ancient-bar-26816035",
-      "ssl": {
-        "require": true,
-        "rejectUnauthorized": false
-      }
-    }
+    "host": "postgres",  // Use the service name from Docker Compose
+    "port": 5432,        // Port for PostgreSQL
+    "dialect": "postgres"
   },
   "test": {
     "username": "root",

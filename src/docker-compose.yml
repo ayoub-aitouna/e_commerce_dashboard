@@ -23,6 +23,19 @@ services:
       - dashboard_volume:/app
     depends_on:
       - backend
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: neondb
+      POSTGRES_USER: jrayoub
+      POSTGRES_PASSWORD: E1KHIP0MOYsJ
+    networks:
+      - mynetwork
+    expose:
+      - 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   backend_volume:
@@ -38,12 +51,8 @@ volumes:
       type: "none"
       o: 'bind'
       device: './dashboard/app/'
-  DB:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: 'bind'
-      device: '.'
+  postgres_data:
+
 
 networks:
   mynetwork:

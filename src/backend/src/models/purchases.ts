@@ -1,34 +1,22 @@
 "use strict";
 import { Model } from "sequelize";
+import { PurchasesAttributes } from "./Atterbuites/Purchases";
 
-interface PurchasesAttributes {
-  id: number;
-  product_id: number;
-  Costumer_id: number;
-  created_at: Date;
-  updated_at: Date;
-}
 
 module.exports = (sequelize: any, DataTypes: any) => {
-  class purchases
-    extends Model<PurchasesAttributes>
-    implements PurchasesAttributes
-  {
+  class Purchases extends Model<PurchasesAttributes> implements PurchasesAttributes {
     id!: number;
     product_id!: number;
     Costumer_id!: number;
     created_at!: Date;
     updated_at!: Date;
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+
     static associate(models: any) {
       // define association here
     }
   }
-  purchases.init(
+
+  Purchases.init(
     {
       id: {
         type: DataTypes.BIGINT,
@@ -40,7 +28,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-          model: "Product",
+          model: "products",  // Correct reference to the "products" table
           key: "id",
         },
       },
@@ -48,7 +36,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-          model: "Costumers",
+          model: "costumers",
           key: "id",
         },
       },
@@ -68,5 +56,6 @@ module.exports = (sequelize: any, DataTypes: any) => {
       modelName: "purchases",
     }
   );
-  return purchases;
+
+  return Purchases;
 };

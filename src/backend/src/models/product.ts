@@ -1,20 +1,14 @@
 "use strict";
-import { Model } from "sequelize";
+import { Model, UUIDV4 } from "sequelize";
 
-interface CostumersAttrebues {
-  id: Number;
-  Email: string;
-  created_at: Date;
-  updated_at: Date;
-}
+import { ProductAttributes, IpTvType } from "./Atterbuites/Product";
+
 
 module.exports = (sequelize: any, DataTypes: any) => {
-  class Costumers
-    extends Model<CostumersAttrebues>
-    implements CostumersAttrebues
-  {
-    id!: Number;
-    Email!: string;
+  class Product extends Model<ProductAttributes> implements ProductAttributes {
+    id!: number;
+    iptv_url!: string;
+    type!: IpTvType;
     created_at!: Date;
     updated_at!: Date;
     /**
@@ -24,18 +18,24 @@ module.exports = (sequelize: any, DataTypes: any) => {
      */
     static associate(models: any) {
       // define association here
-      Costumers.belongsToMany(models.Product, { through: "purchases" });
+      Product.belongsToMany(models.costumers, { through: "purchases" });
     }
   }
-  Costumers.init(
+  Product.init(
     {
       id: {
         type: DataTypes.BIGINT,
         autoIncrement: true,
+        allowNull: false,
         primaryKey: true,
       },
-      Email: {
+      iptv_url: {
         type: DataTypes.STRING,
+        allowNull: false,
+      },
+      type: {
+        type: DataTypes.ENUM(...Object.values(IpTvType)),
+        defaultValue: IpTvType.Basic,
         allowNull: false,
       },
       created_at: {
@@ -51,8 +51,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     },
     {
       sequelize,
-      modelName: "Costumers",
+      modelName: "product",
     }
   );
-  return Costumers;
+  return Product;
 };

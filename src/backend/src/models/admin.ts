@@ -1,14 +1,7 @@
 "use strict";
 import { Model } from "sequelize";
+import { AdminAtterbuites } from "./Atterbuites/Admin";
 
-interface AdminAtterbuites {
-  id: number;
-  email: string;
-  password: string;
-  api_token: string;
-  created_at: Date;
-  updated_at: Date;
-}
 
 module.exports = (sequelize: any, DataTypes: any) => {
   class admin extends Model<AdminAtterbuites> implements AdminAtterbuites {
