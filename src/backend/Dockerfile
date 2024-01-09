@@ -10,8 +10,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 
 RUN apt-get -y install nodejs
 
-RUN mkdir -p /app
+WORKDIR /usr/src/app
 
-WORKDIR  /app
-
-ENTRYPOINT ["npm", "run", "dev"]
+ENTRYPOINT ["sh", "start.sh"]

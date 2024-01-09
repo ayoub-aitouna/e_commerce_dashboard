@@ -9,6 +9,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import theme from './theme/theme';
 
 ReactDOM.render(
+	
 	<ChakraProvider theme={theme}>
 		<React.StrictMode>
 			<HashRouter>

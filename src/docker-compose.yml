@@ -9,7 +9,9 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - backend_volume:/app
+      - backend_volume:/usr/src/app
+    depends_on:
+      - postgres
 
   dashboard:
     container_name: dashboard
@@ -20,9 +22,10 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - dashboard_volume:/app
+      - dashboard_volume:/usr/src/app
     depends_on:
       - backend
+
   postgres:
     image: postgres:latest
     container_name: postgres

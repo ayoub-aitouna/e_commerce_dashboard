@@ -24,6 +24,9 @@ import illustration from "assets/img/auth/auth.png";
 import { FcGoogle } from "react-icons/fc";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
+import Cookies from 'universal-cookie';
+import { useUserStore, User } from "states/user";
+import axios from "axios";
 
 function SignIn() {
   // Chakra color mode
@@ -32,7 +35,24 @@ function SignIn() {
   const brandStars = useColorModeValue("brand.500", "brand.400");
 
   const [show, setShow] = React.useState(false);
+  const [UserCredets, setUserCredets] = React.useState<User>();
   const handleClick = () => setShow(!show);
+
+  const cookies = new Cookies(null, { path: '/' });
+  cookies.set('myCat', 'Pacman');
+  console.log(cookies.get('myCat')); // Pacman
+
+  const SignInRequest = () => {
+    axios.post('http://localhost:8080/api/v1/auth', UserCredets)
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+  }
+
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
@@ -91,6 +111,9 @@ function SignIn() {
               placeholder='mail@simmmple.com'
               mb='24px'
               fontWeight='500'
+              onChange={(e) => {
+                setUserCredets({ ...UserCredets, email: e.target.value });
+              }}
               size='lg'
             />
             <FormLabel
@@ -109,6 +132,9 @@ function SignIn() {
                 mb='24px'
                 size='lg'
                 type={show ? "text" : "password"}
+                onChange={(e) => {
+                  setUserCredets({ ...UserCredets, password: e.target.value });
+                }}
                 variant='auth'
               />
               <InputRightElement display='flex' alignItems='center' mt='4px'>
@@ -143,6 +169,7 @@ function SignIn() {
               fontWeight='500'
               w='100%'
               h='50'
+              onClick={() => { SignInRequest() }}
               mb='24px'>
               Sign In
             </Button>

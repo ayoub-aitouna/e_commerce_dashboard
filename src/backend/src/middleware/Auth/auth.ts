@@ -34,11 +34,10 @@ const Sign = (User: AdminAtterbuites): JwtToken => {
 
     if (!accesstoken_secret || !refreshtoken_secret)
         throw new UnauthenticatedError(`Invalide accessToken`);
-    const accesToken = jwt.sign(User, accesstoken_secret);
-    const RefreshToken = jwt.sign(User, refreshtoken_secret);
+
     return {
-        AccessToken: accesToken,
-        RefreshToken: RefreshToken,
+        AccessToken: jwt.sign(User, accesstoken_secret, { expiresIn: '10m' }),
+        RefreshToken: jwt.sign(User, refreshtoken_secret, { expiresIn: '7d' }),
     };
 }
 
