@@ -4,28 +4,21 @@ import db from "./models";
 import AuthRouter from "./routes/Auth";
 import ProductRouter from "./routes/Products";
 import { authenticationMiddleware, Sign } from "./middleware/Auth/auth";
-import errorHandlerMiddleware from "./middleware/error-handler";
+import { errorHandler } from "./middleware/error-handler";
 import notFound from "./middleware/notFound";
-import { Admins } from "./seeders/Admins";
+import { Admins, SeedAdminTable } from "./seeders/Admins";
+import { AdminAtterbuites } from "./models/Atterbuites/Admin";
+import cors from 'cors'
+require('express-async-errors');
+
+
 dotenv.config();
 const port = process.env.PORT || 3000;
 const app: Express = express();
-import 'express-async-errors'; // Import the library
-import { AdminAtterbuites } from "./models/Atterbuites/Admin";
 
-const SeedAdminTable = async (db: any, Admins: AdminAtterbuites[]) => {
-  try {
-    Admins.map(async (admin) => {
-      const existingAdmin = await db.admin.findOne({ where: { email: admin.email } });
-      if (!existingAdmin) {
-        await db.admin.create(admin);
-        console.log(`Admin '${admin.email}' created successfully.`);
-      }
-    });
-  } catch (error) {
-    console.error('Error seeding admin data:', error);
-  }
-}
+app.use(cors());
+
+
 
 app.use(json());
 
@@ -44,8 +37,10 @@ app.get("/api/v1/get-token", (req: Request, res: Response) => {
   res.json(tokens);
 });
 
+
+app.use(errorHandler);
 app.use(notFound);
-app.use(errorHandlerMiddleware);
+
 
 
 db.sequelize.sync({ alter: false }).then(async () => {

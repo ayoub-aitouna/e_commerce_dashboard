@@ -8,13 +8,30 @@ import { SidebarContext } from 'contexts/SidebarContext';
 import { useState } from 'react';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import routes from 'routes';
+import { useHistory } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+import { Jwt_Refresh_Cockies_Name, jwt_cockies_name } from 'variables/Api';
+import { useUserStore, User } from 'states/user';
 
 // Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {
+	const history = useHistory();
+	const cookies = new Cookies(null, { path: '/' });
+	const AccessToken = cookies.get(jwt_cockies_name);
+	if (!AccessToken)
+		history.push('/auth');
+	// useUserStore((state) => state.SetUser(
+	// 	{
+	// 		email: null,
+	// 		password: null,
+	// 		AccessToken: AccessToken,
+	// 		RefreshToken: cookies.get(Jwt_Refresh_Cockies_Name)
+	// 	}));
+
 	const { ...rest } = props;
 	// states and functions
-	const [ fixed ] = useState(false);
-	const [ toggleSidebar, setToggleSidebar ] = useState(false);
+	const [fixed] = useState(false);
+	const [toggleSidebar, setToggleSidebar] = useState(false);
 	// functions for changing the states from components
 	const getRoute = () => {
 		return window.location.pathname !== '/admin/full-screen-maps';

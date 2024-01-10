@@ -1,5 +1,7 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+
+import { useHistory, NavLink } from "react-router-dom";
+import { Navigate } from "tools/Navigate";
 // Chakra imports
 import {
   Box,
@@ -16,17 +18,28 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
+
 // Custom components
-import { HSeparator } from "components/separator/Separator";
 import DefaultAuth from "layouts/auth/Default";
+import { BaseUrl, jwt_cockies_name, Jwt_Refresh_Cockies_Name } from "variables/Api";
+
 // Assets
 import illustration from "assets/img/auth/auth.png";
-import { FcGoogle } from "react-icons/fc";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import Cookies from 'universal-cookie';
-import { useUserStore, User } from "states/user";
+import { User } from "states/user";
 import axios from "axios";
+import { AxiosResponse, AxiosError } from 'axios';
+
+interface SignInProps {
+  message: string;
+  loading: boolean;
+}
+
+interface resError {
+  errors: { message: string, context: any; };
+}
 
 function SignIn() {
   // Chakra color mode
@@ -35,22 +48,36 @@ function SignIn() {
   const brandStars = useColorModeValue("brand.500", "brand.400");
 
   const [show, setShow] = React.useState(false);
-  const [UserCredets, setUserCredets] = React.useState<User>();
+  const [UserCredets, setUserCredets] = React.useState<User>({ email: "", password: "" });
+  const [SingInProps, setSingInProps] = React.useState<SignInProps>({ message: "", loading: false });
+
   const handleClick = () => setShow(!show);
 
-  const cookies = new Cookies(null, { path: '/' });
-  cookies.set('myCat', 'Pacman');
-  console.log(cookies.get('myCat')); // Pacman
 
-  const SignInRequest = () => {
-    axios.post('http://localhost:8080/api/v1/auth', UserCredets)
-      .then(function (response) {
-        console.log(response);
-      })
-      .catch(function (error) {
-        console.log(error);
+  const cookies = new Cookies(null, { path: '/' });
+  const history = useHistory();
+  if (cookies.get(jwt_cockies_name))
+    history.push('/admin');
+  const SignInRequest = async () => {
+    setSingInProps({ message: "Please Wait...", loading: true });
+    try {
+      const res: AxiosResponse = await axios.post(`http://localhost:8080/api/v1/auth`, {
+        email: UserCredets.email,
+        password: UserCredets.password,
+      });
+      let user_data = res.data as User;
+      cookies.set(jwt_cockies_name, user_data.AccessToken);
+      cookies.set(Jwt_Refresh_Cockies_Name, user_data.RefreshToken);
+      history.push('/admin');
+    } catch (error) {
+      setSingInProps({ message: ((error as AxiosError).response?.data as resError).errors.message, loading: false });
+
+    } finally {
+      setSingInProps((val) => {
+        return { ...val, loading: false }
       });
 
+    }
   }
 
   return (
@@ -80,6 +107,8 @@ function SignIn() {
             Enter your email and password to sign in!
           </Text>
         </Box>
+
+
         <Flex
           zIndex='2'
           direction='column'
@@ -174,6 +203,16 @@ function SignIn() {
               Sign In
             </Button>
           </FormControl>
+
+
+          <Text
+            mb='36px'
+            ms='4px'
+            color={'red.400'}
+            fontWeight='600'
+            fontSize='lg'>
+            {SingInProps.message}
+          </Text>
         </Flex>
       </Flex>
     </DefaultAuth>
