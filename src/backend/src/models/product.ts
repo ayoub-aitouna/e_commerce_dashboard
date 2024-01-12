@@ -9,13 +9,13 @@ module.exports = (sequelize: any, DataTypes: any) => {
     id!: number;
     iptv_url!: string;
     type!: IpTvType;
+    sold!: boolean;
+    solded_at?: Date | undefined;
+    pendding!: boolean;
+    pendding_at?: Date | undefined;
     created_at!: Date;
     updated_at!: Date;
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+
     static associate(models: any) {
       // define association here
       Product.belongsToMany(models.costumers, { through: "purchases" });
@@ -37,6 +37,26 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.ENUM(...Object.values(IpTvType)),
         defaultValue: IpTvType.Basic,
         allowNull: false,
+      },
+      sold: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      solded_at: {
+        type: DataTypes.DATE,
+        defaultValue: null,
+        allowNull: true,
+      },
+      pendding: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      pendding_at: {
+        type: DataTypes.DATE,
+        defaultValue: null,
+        allowNull: true,
       },
       created_at: {
         type: DataTypes.DATE,

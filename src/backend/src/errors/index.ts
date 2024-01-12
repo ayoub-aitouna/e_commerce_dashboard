@@ -1,4 +1,5 @@
 import { BadRequestError } from "./BadRequestError";
+import { InvalideBody } from "./InvalideBody";
 import { CustomError } from "./custom-error";
 
-export { BadRequestError, CustomError };
+export { BadRequestError, InvalideBody, CustomError };

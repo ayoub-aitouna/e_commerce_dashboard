@@ -10,8 +10,8 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import routes from 'routes';
 import { useHistory } from 'react-router-dom';
 import Cookies from 'universal-cookie';
-import { Jwt_Refresh_Cockies_Name, jwt_cockies_name } from 'variables/Api';
-import { useUserStore, User } from 'states/user';
+import { jwt_cockies_name } from 'variables/Api';
+
 
 // Custom Chakra theme
 export default function Dashboard(props: { [x: string]: any }) {

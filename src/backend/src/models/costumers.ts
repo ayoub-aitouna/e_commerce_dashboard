@@ -6,10 +6,13 @@ import { CostumersAttrebues } from "./Atterbuites/Costumers";
 module.exports = (sequelize: any, DataTypes: any) => {
   class Costumers
     extends Model<CostumersAttrebues>
-    implements CostumersAttrebues
-  {
+    implements CostumersAttrebues {
     id!: Number;
     Email!: string;
+    bought!: boolean;
+    bought_at!: Date;
+    pendding!: boolean;
+    pendding_at!: Date;
     created_at!: Date;
     updated_at!: Date;
     /**
@@ -32,6 +35,26 @@ module.exports = (sequelize: any, DataTypes: any) => {
       Email: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      bought: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      bought_at: {
+        type: DataTypes.DATE,
+        defaultValue: null,
+        allowNull: true,
+      },
+      pendding: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      pendding_at: {
+        type: DataTypes.DATE,
+        defaultValue: null,
+        allowNull: true,
       },
       created_at: {
         type: DataTypes.DATE,
