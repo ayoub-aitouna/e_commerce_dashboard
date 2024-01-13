@@ -1,7 +1,6 @@
 import React from "react";
-
 import { useHistory, NavLink } from "react-router-dom";
-import { Navigate } from "tools/Navigate";
+
 // Chakra imports
 import {
   Box,

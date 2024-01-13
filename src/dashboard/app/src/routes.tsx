@@ -1,15 +1,22 @@
 import { Icon } from '@chakra-ui/react';
 import { MdBarChart, MdPerson, MdHome, MdLock, MdOutlineShoppingCart } from 'react-icons/md';
 
+// unused Pages
+/*
+ import NFTMarketplace from 'views/admin/marketplace';
+ import Profile from 'views/admin/profile';
+ import RTL from 'views/admin/rtl';
+ import SignInCentered from 'views/auth/signIn';
+*/
+
 // Admin Imports
 import MainDashboard from 'views/admin/default';
-import NFTMarketplace from 'views/admin/marketplace';
-import Profile from 'views/admin/profile';
+
 import DataTables from 'views/admin/dataTables';
-import RTL from 'views/admin/rtl';
+import Products from 'views/admin/dataTables/Products';
+import Costumers from 'views/admin/dataTables/Costumers';
 
 // Auth Imports
-import SignInCentered from 'views/auth/signIn';
 
 const routes = [
 	{
@@ -24,23 +31,15 @@ const routes = [
 		layout: '/admin',
 		icon: <Icon as={MdBarChart} width='20px' height='20px' color='inherit' />,
 		path: '/data-iptv',
-		component: DataTables
+		component: Products
 	},
 	{
 		name: 'Petential Costumers',
 		layout: '/admin',
 		icon: <Icon as={MdBarChart} width='20px' height='20px' color='inherit' />,
 		path: '/data-costumers',
-		component: DataTables
-	},
-	{
-		name: 'Data Tables',
-		layout: '/admin',
-		icon: <Icon as={MdBarChart} width='20px' height='20px' color='inherit' />,
-		path: '/data-tables',
-		component: DataTables
+		component: Costumers
 	}
-
 ];
 
 export default routes;
