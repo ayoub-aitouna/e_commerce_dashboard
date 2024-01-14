@@ -3,25 +3,21 @@ import { NextFunction, Request, Response } from "express";
 import { CostumersAttrebues } from "@/models/Atterbuites/Costumers";
 import { BadRequestError, InvalideBody } from "../errors";
 import { log } from "console";
-import { SendEmail } from "../mailer/mailer";
+import { SendEmail, generateEmailTemplate } from "../mailer/mailer";
 import db from "../models";
 import Queue from 'better-queue';
 import { str2Boolean } from '../utils/str2Boolean';
-
 
 let emailQueue = new Queue(async (emailTask: any, cb: any) => {
     const { email, url } = emailTask;
     const username = url.searchParams.get('username');
     const pass = url.searchParams.get('password');
-    const str_url = url.toString();
+
     await SendEmail({
         to: email,
         subject: 'Product Purchase Confirmation',
         text: 'Thank you for purchasing our product.',
-        html: `<b>Thank you for purchasing our product.</b>
-                password: ${pass}
-                username: ${username}
-                url: ${str_url}`,
+        html: await generateEmailTemplate(username, pass, url, 'fr'),
     })
     cb();
 });
@@ -83,7 +79,10 @@ export const UpdateUrl = async (req: Request, res: Response, next: NextFunction)
         if (products.length !== 0) {
             const updatedProducts = products.map((product) => {
                 let url = new URL(product.iptv_url);
-                url.hostname = UpdatedDns;
+                let newurl = new URL(UpdatedDns);
+                url.hostname = newurl.hostname;
+                url.port = newurl.port;
+                url.protocol = newurl.protocol;
                 return { id: product.id, iptv_url: url.toString() };
             });
             await db.product.bulkCreate(updatedProducts, { updateOnDuplicate: ["iptv_url"] });
@@ -102,12 +101,15 @@ export const UpdateUrl = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
-export const AddNewProduct = async (req: Request, res: Response) => {
+export const AddNewProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { iptv_url, type } = req.body;
 
         if (!iptv_url || !Object.values(IpTvType).includes(type))
-            throw new InvalideBody();
+            throw new BadRequestError({ code: 400, message: "Invalid Url Or Type", logging: true });
+        if (!checkIfUrlIsValide(iptv_url))
+            throw new BadRequestError({ code: 400, message: "Invalid url", logging: true });
+
 
         const productvalues = { iptv_url, type } as ProductAttributes;
 
@@ -148,7 +150,7 @@ export const AddNewProduct = async (req: Request, res: Response) => {
             result
         });
     } catch (error: any) {
-        return res.status(500).json(`err ${error}`);
+        next(error);
     }
 }
 

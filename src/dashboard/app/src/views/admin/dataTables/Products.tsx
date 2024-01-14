@@ -24,10 +24,9 @@ export default function Products() {
         setFilter((v) => ({ ...v, type: Selected } as Filters));
     };
 
-    const { products, getProducts, error } = productStore((state) => ({
+    const { products, getProducts } = productStore((state) => ({
         products: state.products,
         getProducts: state.getProducts,
-        error: state.error,
     }));
     useEffect(() => { getProducts(Filter) }, [Filter]);
 

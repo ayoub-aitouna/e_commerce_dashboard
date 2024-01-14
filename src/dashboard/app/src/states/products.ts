@@ -1,6 +1,7 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
+import { stat } from 'fs';
 
 export enum IpTvType {
     Basic = "basic",
@@ -27,10 +28,9 @@ export interface Filters {
 
 type Store = {
     products: ProductAttributes[];
-    error: string | null;
-    Loading: boolean;
     getProducts: (filters?: Filters) => Promise<void>;
     editProduct: (product: ProductAttributes) => Promise<void>;
+    updateDns: (newDns: string) => Promise<void>;
     deleteProduct: (id: number) => Promise<void>;
     addProduct: (product: ProductAttributes) => Promise<void>;
 };
@@ -52,61 +52,46 @@ export const productStore = create<Store>((set) => ({
     error: null,
     Loading: false,
     getProducts: async (filters: Filters) => {
-        set({ error: null });
-        set({ Loading: true });
-        try {
-            const { data } = await axios.get(
-                `${BaseUrl}/product/${GetFilters(filters)}`);
-            set({ products: data });
-        } catch (error: any) {
-            console.log("Error", error);
-            set({ error: error.message });
-        } finally {
-            set({ Loading: false });
-        }
+        const { data } = await axios.get(
+            `${BaseUrl}/product/${GetFilters(filters)}`);
+        set({ products: data });
     },
     editProduct: async (product) => {
-        set({ error: null });
-        set({ Loading: true });
-
-        try {
-            const { data } = await axios.patch(`${BaseUrl}/product/`, product);
-            set((state) => ({
-                products: state.products.map((p) =>
-                    p.id === product.id ? { ...p, ...data } : p
-                ),
-            }));
-        } catch (error: any) {
-            set({ error: error.message });
-        } finally {
-            set({ Loading: false });
-        }
+        await axios.patch(`${BaseUrl}/product/`, product);
+        set((state) => {
+            return {
+                products: state.products.map((p) => {
+                    return p.id === product.id ? { ...p, ...product } : p;
+                }),
+                Loading: false
+            };
+        });
+    },
+    updateDns: async (newDns) => {
+        await axios.get(`${BaseUrl}/product/UpdateUrl/?UpdatedDns=${newDns}`);
+        set((state: any) => {
+            return {
+                products: state.products.map((p: any) => {
+                    const url = new URL(p.iptv_url);
+                    const newurl = new URL(newDns);
+                    url.hostname = newurl.hostname;
+                    url.port = newurl.port;
+                    url.protocol = newurl.protocol;
+                    p.iptv_url = url.toString();
+                    return p;
+                })
+            };
+        });
     },
     deleteProduct: async (id) => {
-        set({ error: null });
-        set({ Loading: true });
+        await axios.delete(`${BaseUrl}/product/?id=${id}`);
+        set((state) => ({
+            products: state.products.filter((product) => product.id !== id),
+        }));
 
-        try {
-            await axios.delete(`${BaseUrl}/product/${id}`);
-            set((state) => ({
-                products: state.products.filter((product) => product.id !== id),
-            }));
-        } catch (error: any) {
-            set({ error: error.message });
-        } finally {
-            set({ Loading: false });
-        }
     },
     addProduct: async (product) => {
-        set({ error: null });
-        set({ Loading: true });
-        try {
-            const { data } = await axios.post(`${BaseUrl}/product`, product);
-            set((state) => ({ products: [...state.products, data] }));
-        } catch (error: any) {
-            set({ error: error.message });
-        } finally {
-            set({ Loading: false });
-        }
+        const { data } = await axios.post(`${BaseUrl}/product`, product);
+        set((state) => ({ products: [...state.products, data.result] }));
     },
 }));
