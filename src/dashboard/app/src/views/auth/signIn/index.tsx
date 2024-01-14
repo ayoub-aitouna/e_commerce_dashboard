@@ -60,7 +60,7 @@ function SignIn() {
   const SignInRequest = async () => {
     setSingInProps({ message: "Please Wait...", loading: true });
     try {
-      const res: AxiosResponse = await axios.post(`http://localhost:8080/api/v1/auth`, {
+      const res: AxiosResponse = await axios.post(`${BaseUrl}/auth`, {
         email: UserCredets.email,
         password: UserCredets.password,
       });

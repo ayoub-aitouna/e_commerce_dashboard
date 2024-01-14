@@ -31,17 +31,14 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
-    environment:
-      POSTGRES_DB: neondb
-      POSTGRES_USER: jrayoub
-      POSTGRES_PASSWORD: E1KHIP0MOYsJ
     networks:
       - mynetwork
     expose:
       - 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    env_file:
+      - backend/.env
 volumes:
   backend_volume:
     driver: local

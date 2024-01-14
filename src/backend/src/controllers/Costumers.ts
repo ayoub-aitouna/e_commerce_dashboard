@@ -5,16 +5,25 @@ import { log } from 'console';
 import path from 'path';
 import db from '../models';
 import fs from 'fs';
+import { str2Boolean } from '../utils/str2Boolean';
+
 
 export const ListCostumers = async (req: Request, res: Response, next: NextFunction) => {
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
+    let bought = str2Boolean(req.query.bought as string);
+    let pendding = str2Boolean(req.query.pendding as string);
+
     let offset = (page - 1) * limit;
     try {
         const constumers = await db.costumers.findAll({
+
             limit: limit,
             offset: offset,
+            where: {
+                bought: bought,
+                pendding: pendding
+            },
         });
         res.status(200).json(constumers);
     } catch (error) {
@@ -34,11 +43,7 @@ const SenDownloadableFile = (res: Response, filename: string) => {
     });
 }
 
-const str2Boolean = (str: string) => {
-    if (str === "1")
-        return true;
-    return false;
-}
+
 
 export const SaveCostumers = async (req: Request, res: Response, next: NextFunction) => {
     try {

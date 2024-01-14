@@ -14,12 +14,12 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
             }, null, 2));
         }
 
-        return res.status(statusCode).send({ errors });
+        return res.status(statusCode).send(errors);
     }
 
     // Unhandled errors
     console.error(JSON.stringify(err, null, 2));
-    return res.status(500).send({ errors: [{ message: "Something went wrong" }] });
+    return res.status(500).send({ message: "Something went wrong" });
 };
 
 export { errorHandler }

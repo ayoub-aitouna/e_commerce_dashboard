@@ -2,10 +2,11 @@ import { ProductAttributes, IpTvType } from "../models/Atterbuites/Product";
 import { NextFunction, Request, Response } from "express";
 import { CostumersAttrebues } from "@/models/Atterbuites/Costumers";
 import { BadRequestError, InvalideBody } from "../errors";
-import db from "../models";
 import { log } from "console";
 import { SendEmail } from "../mailer/mailer";
+import db from "../models";
 import Queue from 'better-queue';
+import { str2Boolean } from '../utils/str2Boolean';
 
 
 let emailQueue = new Queue(async (emailTask: any, cb: any) => {
@@ -13,7 +14,6 @@ let emailQueue = new Queue(async (emailTask: any, cb: any) => {
     const username = url.searchParams.get('username');
     const pass = url.searchParams.get('password');
     const str_url = url.toString();
-
     await SendEmail({
         to: email,
         subject: 'Product Purchase Confirmation',
@@ -26,18 +26,38 @@ let emailQueue = new Queue(async (emailTask: any, cb: any) => {
     cb();
 });
 
-
-
 const SendMailToCostumer = async (email: string, url: URL) => {
     emailQueue.push({ email, url });
+
+}
+
+
+function generateWhereClause(sold: any, type: any) {
+    let where = {} as any;
+
+    if (sold !== undefined && sold !== null) {
+        where.sold = sold;
+    }
+
+    if (Object.values(IpTvType).includes(type)) {
+        where.type = type;
+    }
+    console.log("where", where);
+    return where;
 }
 
 export const ProductList = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 50;
+        const sold: any = req.query.sold;
+        const type: any = req.query.type;
+
+        const offset = (page - 1) * limit;
         const result = await db.product.findAll({
-            where: {
-                sold: false
-            }
+            limit: limit,
+            offset: offset,
+            where: generateWhereClause(sold, type)
         });
         return res.status(200).json(result);
     } catch (error: any) {
@@ -45,28 +65,35 @@ export const ProductList = async (req: Request, res: Response, next: NextFunctio
     }
 }
 
+const checkIfUrlIsValide = (url: string) => {
+    try {
+        new URL(url);
+        return true
+    } catch (error) {
+        return false;
+    }
+}
+
 export const UpdateUrl = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const UpdatedDns = req.query.UpdatedDns;
-        if (!UpdatedDns)
+        if (!UpdatedDns || typeof UpdatedDns !== "string" || !checkIfUrlIsValide(UpdatedDns))
             throw new InvalideBody();
         const products: ProductAttributes[] = await db.product.findAll({ where: { sold: false } });
-        if (products.length === 0)
-            return res.status(404).json({ msg: "no product found" });
+        if (products.length !== 0) {
+            const updatedProducts = products.map((product) => {
+                let url = new URL(product.iptv_url);
+                url.hostname = UpdatedDns;
+                return { id: product.id, iptv_url: url.toString() };
+            });
+            await db.product.bulkCreate(updatedProducts, { updateOnDuplicate: ["iptv_url"] });
+        }
 
-        const updatedProducts = products.map((product) => {
-            let url = new URL(product.iptv_url);
-            url.hostname = UpdatedDns as string;
-            return { id: product.id, iptv_url: url.toString() };
-        });
-
-        await db.product.bulkCreate(updatedProducts, { updateOnDuplicate: ["iptv_url"] });
 
         const costumers: CostumersAttrebues[] = await db.costumers.findAll({ where: { bought: true } });
         for (let costumer of costumers) {
-            // send mail to all costumers
-            // in backround
-
+            log("UpdateUrl Sending email to: ", costumer.Email);
+            SendMailToCostumer(costumer.Email, new URL(UpdatedDns));
         }
 
         return res.status(200).send({ msg: "ok" });
@@ -86,20 +113,30 @@ export const AddNewProduct = async (req: Request, res: Response) => {
 
         const result = await db.sequelize.transaction(async (t: any) => {
 
-            const pendding_costumers: CostumersAttrebues[]
-                = await db.costumers.findAll({
+            const pendding_costumer
+                = await db.costumers.findOne({
                     where: { pendding: true }, transaction: t
                 });
 
-            if (pendding_costumers && pendding_costumers.length > 0) {
-                await db.costumers.update(
+            if (pendding_costumer) {
+                Object.assign(pendding_costumer,
                     {
-                        pendding: false, pendding_at: null,
-                        bought: true, bought_at: new Date()
-                    },
-                    { where: { id: pendding_costumers[0].id }, transaction: t });
-                productvalues.sold = true;
-                productvalues.solded_at = new Date();
+                        bought: true,
+                        pendding: false,
+                        bought_at: new Date(),
+                        pendding_at: null
+                    });
+
+                await pendding_costumer.save({ transaction: t });
+
+                Object.assign(productvalues,
+                    {
+                        sold: true,
+                        solded_at: new Date()
+                    });
+
+                SendMailToCostumer(pendding_costumer.Email,
+                    new URL(productvalues.iptv_url));
             }
 
             const result = await db.product.create(productvalues, { transaction: t });
@@ -115,11 +152,12 @@ export const AddNewProduct = async (req: Request, res: Response) => {
     }
 }
 
-export const EditOnAProduct = async (req: Request, _res: Response, next: NextFunction) => {
+export const EditOnAProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id, iptv_url, type } = req.body;
-        if (!id)
+        if (!id || !Object.values(IpTvType).includes(type) || !checkIfUrlIsValide(iptv_url))
             throw new InvalideBody();
+        log("EditOnAProduct", id, iptv_url, type)
         const product = await db.product.findByPk(id);
         if (!product)
             throw new BadRequestError({ code: 404, message: "Product not found", logging: true });
@@ -128,43 +166,51 @@ export const EditOnAProduct = async (req: Request, _res: Response, next: NextFun
         if (type)
             product.type = type;
         await product.save();
+        return res.status(200).json({ msg: "ok" });
     } catch (error: any) {
         next(error);
     }
 }
 
-
-
-const CreateCostumer = async (email: string, bought: boolean, pendding: boolean) => {
-    await db.costumers.create({
+const CreateCostumer = async (email: string, bought: boolean, pendding: boolean): Promise<CostumersAttrebues> => {
+    const costumer: CostumersAttrebues = await db.costumers.create({
         Email: email,
         bought: bought,
-        pendding: pendding,
-        pendding_at: new Date(),
-        created_at: new Date(),
-        updated_at: new Date()
+        pendding: pendding
     });
+    return costumer;
 }
 
 export const SellProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { api_token, email, selected_plan } = req.body;
+
         if (!Object.values(IpTvType).includes(selected_plan) || !api_token || !email)
             throw new InvalideBody();
+
         const { count } = await db.admin.findAndCountAll({ where: { api_token: api_token } });
         if (count === 0)
             return res.status(401).json({ msg: "unauthorized" });
-        const products: ProductAttributes[] = await db.product.findAll({ where: { sold: false } });
-        if (products.length === 0) {
+
+        const product: ProductAttributes = await db.product.findOne({ where: { sold: false, type: selected_plan } });
+        if (!product) {
             log("No product found ", email);
             await CreateCostumer(email, false, true);
             return res.status(200).json({ msg: "pendding" });
         }
-        log("Selected : ", products[0].iptv_url);
-        await SendMailToCostumer(email, new URL(products[0].iptv_url));
-        await db.product.update({ sold: true }, { where: { id: products[0].id } });
-        await CreateCostumer(email, true, false);
+
+
+        await SendMailToCostumer(email, new URL(product.iptv_url));
+        await db.product.update({ sold: true }, { where: { id: product.id } });
+
+        let costumer = await CreateCostumer(email, true, false);
+        await db.purchases.create({
+            product_id: product.id,
+            Costumer_id: costumer.id,
+        });
+
         return res.status(200).json({ msg: "ok" });
+
     } catch (error: any) {
         next(error);
     }
@@ -177,7 +223,9 @@ export const DeleteProduct = async (req: Request, res: Response, next: NextFunct
         if (!id)
             throw new InvalideBody();
         const result = await db.product.destroy({ where: { id: id } });
-        return res.status(204).json({ result });
+        if (!result)
+            return res.status(404).json({ msg: "Product not found" });
+        return res.sendStatus(204);
     }
     catch (error: any) {
         next(error);

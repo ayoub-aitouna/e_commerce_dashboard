@@ -6,12 +6,11 @@ import ProductRouter from "./routes/Products";
 import CostumersRouter from "./routes/Costumers";
 import StaticsRouter from "./routes/Statics";
 
-import { authenticationMiddleware, Sign } from "./middleware/Auth/auth";
 import { errorHandler } from "./middleware/error-handler";
 import notFound from "./middleware/notFound";
 import { Admins, SeedAdminTable } from "./seeders/Admins";
-import { AdminAtterbuites } from "./models/Atterbuites/Admin";
 import cors from 'cors'
+
 require('express-async-errors');
 
 

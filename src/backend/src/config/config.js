@@ -9,7 +9,8 @@ module.exports =
     "database": process.env.DB_NAME,
     "host": "postgres",  // Use the service name from Docker Compose
     "port": 5432,        // Port for PostgreSQL
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "logging": false,
   },
   "test": {
     "username": "root",

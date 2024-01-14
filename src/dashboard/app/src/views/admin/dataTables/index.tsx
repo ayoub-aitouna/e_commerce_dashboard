@@ -4,6 +4,7 @@ import { Box, SimpleGrid } from '@chakra-ui/react';
 import ColumnsTable from 'views/admin/dataTables/components/ColumnsTable';
 import tableDataColumns from 'views/admin/dataTables/variables/tableDataColumns';
 
+
 export default function Settings() {
 	// Chakra Color Mode
 	return (
@@ -17,3 +18,14 @@ export default function Settings() {
 		</Box>
 	);
 }
+
+
+
+
+
+
+
+
+
+
+
