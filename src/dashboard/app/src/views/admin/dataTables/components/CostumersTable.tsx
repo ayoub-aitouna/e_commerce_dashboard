@@ -16,14 +16,7 @@ import Menu from 'components/menu/MainMenu';
 import { ParseDate } from 'utils/Dateparser';
 
 
-export interface CostumersAttrebues {
-	Email: string;
-	bought: boolean;
-	bought_at: Date;
-	pendding: boolean;
-	pendding_at: Date;
-	created_at: Date;
-}
+import { CostumersAttrebues } from 'states/costumers';
 
 const columnHelper = createColumnHelper<CostumersAttrebues>();
 
