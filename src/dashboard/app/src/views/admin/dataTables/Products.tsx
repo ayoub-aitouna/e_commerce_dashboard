@@ -1,8 +1,8 @@
-import { Box, SimpleGrid, Select, Button, HStack, Flex, Text, IconButton } from '@chakra-ui/react';
+import { Box, Select, HStack, Flex, Text, IconButton } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 
-import { ProductAttributes, IpTvType } from 'states/products';
+import {  IpTvType } from 'states/products';
 
 import ProductsTable from 'views/admin/dataTables/components/ProductsTable';
 
@@ -11,7 +11,7 @@ import ProductsTable from 'views/admin/dataTables/components/ProductsTable';
 import { productStore, Filters } from 'states/products';
 
 export default function Products() {
-    const [Filter, setFilter] = useState<Filters>({ page: 1, sold: false, type: null } as Filters);
+    const [Filter, setFilter] = useState<Filters>({ page: 1, sold: null, type: null } as Filters);
 
 
     const handleSoldFilterChange = (value: string) => {

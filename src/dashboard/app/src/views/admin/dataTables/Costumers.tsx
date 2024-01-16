@@ -9,20 +9,19 @@ import { IconContext } from 'react-icons';
 import { BaseUrl } from 'variables/Api';
 
 export default function Costumers() {
-    const [Filter, setFilter] = useState<Filters>({ page: 1, bought: true, pending: false } as Filters);
+    const [Filter, setFilter] = useState<Filters>({ page: 1, bought: null, pending: null } as Filters);
 
     const [loading, setloading] = useState<boolean>(false);
-    const handleSoldFilterChange = (value: string) => {
+    const handleBoughtFilterChange = (value: string) => {
         const Selected: boolean = value === "true" ? true : (value === "false" ? false : null);
         setFilter((v) => ({ ...v, bought: Selected } as Filters));
     };
 
-    const handleTypeFilterChange = (value: string) => {
+    const handlePendingFilterChange = (value: string) => {
         setFilter((v) => ({ ...v, pending: false } as Filters));
     };
 
     const handleDownload = async (e: any) => {
-        console.log("download");
         setloading(true);
         await downloadCostumers(Filter);
         setloading(false);
@@ -44,7 +43,7 @@ export default function Costumers() {
                     <Select
                         placeholder="Bought Filter"
                         value={Filter.bought ? "true" : (Filter.bought === false ? "false" : null)}
-                        onChange={(e) => handleSoldFilterChange(e.target.value)}
+                        onChange={(e) => handleBoughtFilterChange(e.target.value)}
                     >
                         <option value="true">Sold</option>
                         <option value="false">Available</option>
@@ -52,7 +51,7 @@ export default function Costumers() {
                     <Select
                         placeholder="Pending Filter"
                         value={Filter.pending ? "true" : (Filter.pending === false ? "false" : null)}
-                        onChange={(e) => handleSoldFilterChange(e.target.value)}
+                        onChange={(e) => handlePendingFilterChange(e.target.value)}
                     >
                         <option value="true">Sold</option>
                         <option value="false">Available</option>
