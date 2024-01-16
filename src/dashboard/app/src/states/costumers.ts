@@ -1,15 +1,19 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
-import Costumers from 'views/admin/dataTables/Costumers';
+import { get } from 'http';
 
 export interface CostumersAttrebues {
+    id: Number;
     Email: string;
+    referenceSite: string;
+    language: string;
     bought: boolean;
     bought_at: Date;
     pendding: boolean;
     pendding_at: Date;
     created_at: Date;
+    updated_at: Date;
 }
 
 export interface Filters {
@@ -22,6 +26,7 @@ type Store = {
     costumers: CostumersAttrebues[];
     getCostumers: (filters?: Filters) => Promise<void>;
     downloadCostumers: (filters?: Filters) => Promise<void>;
+    SearchCostumers: (searchQuery?: String) => Promise<void>;
 };
 
 const GetFilters = (filters: Filters) => {
@@ -55,5 +60,10 @@ export const costumerStore = create<Store>((set: any) => ({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    },
+    SearchCostumers: async (searchQuery?: String) => {
+        const { data } = await axios.get(
+            `${BaseUrl}/costumers/Search/?searchQuery=${searchQuery}`);
+        set({ costumers: data });
     },
 }));

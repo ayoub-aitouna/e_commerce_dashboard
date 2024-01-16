@@ -2,7 +2,7 @@
 all: up
 
 up:
-	sudo docker-compose -f ./src/docker-compose.yml up --build
+	docker-compose -f ./src/docker-compose.yml up --build
 
 down:
 	docker-compose -f ./src/docker-compose.yml down

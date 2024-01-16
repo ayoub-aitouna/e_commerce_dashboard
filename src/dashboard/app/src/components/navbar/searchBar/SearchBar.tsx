@@ -6,10 +6,11 @@ export function SearchBar(props: {
 	children?: JSX.Element;
 	placeholder?: string;
 	borderRadius?: string | number;
+	onChange?: (e: any) => void;
 	[x: string]: any;
 }) {
 	// Pass the computed styles into the `__css` prop
-	const { variant, background, children, placeholder, borderRadius, ...rest } = props;
+	const { variant, background, children, placeholder, borderRadius, onChange, ...rest } = props;
 	// Chakra Color Mode
 	const searchIconColor = useColorModeValue('gray.700', 'white');
 	const inputBg = useColorModeValue('secondaryGray.300', 'navy.900');
@@ -40,6 +41,10 @@ export function SearchBar(props: {
 				bg={background ? background : inputBg}
 				color={inputText}
 				fontWeight='500'
+				onChange={(e: any) => {
+					if (onChange)
+						onChange(e);
+				}}
 				_placeholder={{ color: 'gray.400', fontSize: '14px' }}
 				borderRadius={borderRadius ? borderRadius : '30px'}
 				placeholder={placeholder ? placeholder : 'Search...'}

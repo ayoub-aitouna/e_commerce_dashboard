@@ -9,6 +9,7 @@ import { languageEnum, } from '../languages';
 import db from "../models";
 import Queue from 'better-queue';
 import dotenv from "dotenv";
+import { Op } from 'sequelize';
 
 dotenv.config();
 
@@ -183,11 +184,15 @@ export const EditOnAProduct = async (req: Request, res: Response, next: NextFunc
     }
 }
 
-const CreateCostumer = async (email: string, bought: boolean, pendding: boolean, referenceSite: string): Promise<CostumersAttrebues> => {
+const CreateCostumer = async (email: string, bought: boolean, pendding: boolean, referenceSite: string, language: string): Promise<CostumersAttrebues> => {
     const costumer: CostumersAttrebues = await db.costumers.create({
         Email: email,
         bought: bought,
-        pendding: pendding
+        pendding: pendding,
+        referenceSite: referenceSite,
+        language: language,
+        bought_at: bought ? new Date() : null,
+        pendding_at: pendding ? new Date() : null,
     });
     return costumer;
 }
@@ -218,16 +223,14 @@ export const SellProduct = async (req: Request, res: Response, next: NextFunctio
 
         const product: ProductAttributes = await db.product.findOne({ where: { sold: false, type: selected_plan } });
         if (!product) {
-            log("No product found ", email);
-            await CreateCostumer(email, false, true, referenceSite);
+            await CreateCostumer(email, false, true, referenceSite, language);
             return res.status(200).json({ msg: "pendding" });
         }
-
 
         await SendMailToCostumer(email, new URL(product.iptv_url), language, referenceSite);
         await db.product.update({ sold: true }, { where: { id: product.id } });
 
-        let costumer = await CreateCostumer(email, true, false, referenceSite);
+        let costumer = await CreateCostumer(email, true, false, referenceSite, language);
         await db.purchases.create({
             product_id: product.id,
             Costumer_id: costumer.id,
@@ -255,4 +258,23 @@ export const DeleteProduct = async (req: Request, res: Response, next: NextFunct
         next(error);
     };
 };
+
+
+
+
+export const SearchProduct = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { searchQuery } = req.query;
+        const products = await db.product.findAll({
+            where: searchQuery ? {
+                [Op.or]: [
+                    { iptv_url: { [Op.iLike]: `%${searchQuery}%` } },
+                ]
+            } : {}
+        });
+        return res.status(200).json(products);
+    } catch (error: any) {
+        next(error);
+    }
+}
 

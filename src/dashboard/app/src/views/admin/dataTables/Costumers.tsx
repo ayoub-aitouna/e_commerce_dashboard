@@ -1,12 +1,11 @@
 
 // Chakra imports
-import { Box, SimpleGrid, Select, Button, HStack, Flex, Text, IconButton, Spinner } from '@chakra-ui/react';
+import { Box, Select, Button, HStack, Flex, Text, IconButton, Spinner } from '@chakra-ui/react';
 import CostumersTable from 'views/admin/dataTables/components/CostumersTable';
 import { useEffect, useState } from 'react';
-import { CostumersAttrebues, Filters, costumerStore } from 'states/costumers';
+import { Filters, costumerStore } from 'states/costumers';
 import { ArrowBackIcon, ArrowForwardIcon, DownloadIcon } from "@chakra-ui/icons";
-import { IconContext } from 'react-icons';
-import { BaseUrl } from 'variables/Api';
+
 
 export default function Costumers() {
     const [Filter, setFilter] = useState<Filters>({ page: 1, bought: null, pending: null } as Filters);
@@ -18,7 +17,8 @@ export default function Costumers() {
     };
 
     const handlePendingFilterChange = (value: string) => {
-        setFilter((v) => ({ ...v, pending: false } as Filters));
+        const Selected: boolean = value === "true" ? true : (value === "false" ? false : null);
+        setFilter((v) => ({ ...v, pending: Selected } as Filters));
     };
 
     const handleDownload = async (e: any) => {
@@ -26,6 +26,13 @@ export default function Costumers() {
         await downloadCostumers(Filter);
         setloading(false);
     }
+    const LoadTableData = async () => {
+        try {
+            await getCostumers(Filter);
+        } catch (error: any) {
+            console.error(error);
+        }
+    };
 
     const { costumers, getCostumers, downloadCostumers } = costumerStore((state: any) => ({
         costumers: state.costumers,
@@ -33,7 +40,9 @@ export default function Costumers() {
         downloadCostumers: state.downloadCostumers
     }));
 
-    useEffect(() => { getCostumers(Filter) }, [Filter]);
+    useEffect(() => {
+        LoadTableData();
+    }, [Filter]);
 
 
     return (
@@ -41,35 +50,35 @@ export default function Costumers() {
             <Flex justifyContent="space-between" mb={4} mx={10} mt={10} >
                 <HStack spacing={4} w={'50%'}>
                     <Select
-                        placeholder="Bought Filter"
+                        placeholder="Purchased State"
                         value={Filter.bought ? "true" : (Filter.bought === false ? "false" : null)}
                         onChange={(e) => handleBoughtFilterChange(e.target.value)}
                     >
-                        <option value="true">Sold</option>
-                        <option value="false">Available</option>
+                        <option value="true">Purchased</option>
+                        <option value="false">Not Purchased</option>
                     </Select>
                     <Select
-                        placeholder="Pending Filter"
+                        placeholder="Pendding Purchase State"
                         value={Filter.pending ? "true" : (Filter.pending === false ? "false" : null)}
                         onChange={(e) => handlePendingFilterChange(e.target.value)}
                     >
-                        <option value="true">Sold</option>
-                        <option value="false">Available</option>
+                        <option value="true">Pendding Purchase</option>
+                        <option value="false">Completed Purchase</option>
                     </Select>
                 </HStack>
                 <Flex align="center" gap={5}>
-                        <Button
-                            colorScheme="blue"
-                            _hover={{ backgroundColor: "gray.900" }}
-                            backgroundColor="blue.500"
-                            rightIcon={loading ? <Spinner size='sm' /> : <DownloadIcon />}
-                            variant='ghost'
-                            aria-label="Update"
-                            color={"white"}
-                            size="md"
-                            onClick={(e) => handleDownload(e)}>
-                            Download As csv
-                        </Button>
+                    <Button
+                        colorScheme="blue"
+                        _hover={{ backgroundColor: "gray.900" }}
+                        backgroundColor="blue.500"
+                        rightIcon={loading ? <Spinner size='sm' /> : <DownloadIcon />}
+                        variant='ghost'
+                        aria-label="Update"
+                        color={"white"}
+                        size="md"
+                        onClick={(e) => handleDownload(e)}>
+                        Download As csv
+                    </Button>
 
 
                 </Flex>

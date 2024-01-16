@@ -5,24 +5,35 @@ import { log } from 'console';
 import path from 'path';
 import db from '../models';
 import fs from 'fs';
-import { str2Boolean } from '../utils/str2Boolean';
+import { BadRequestError } from '../errors';
+import { Op } from 'sequelize';
+
+
+function generateWhereClause(bought: any, pendding: any) {
+    let where = {} as any;
+
+    if (bought !== undefined && bought !== null)
+        where.bought = bought;
+    if (pendding !== undefined && pendding !== null)
+        where.pendding = pendding;
+    console.log("Costumers List Filters : ", where);
+    return where;
+}
 
 
 export const ListCostumers = async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 15;
-    let bought = str2Boolean(req.query.bought as string);
-    let pendding = str2Boolean(req.query.pendding as string);
 
+    const bought: any = req.query.bought;
+    const pendding: any = req.query.pendding;
     let offset = (page - 1) * limit;
+
     try {
         const constumers = await db.costumers.findAll({
             limit: limit,
             offset: offset,
-            where: {
-                bought: bought,
-                pendding: pendding
-            },
+            where: generateWhereClause(bought, pendding),
         });
         res.status(200).json(constumers);
     } catch (error) {
@@ -46,30 +57,70 @@ const SenDownloadableFile = (res: Response, filename: string) => {
 
 export const SaveCostumers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        let bought = str2Boolean(req.query.bought as string);
-        let pendding = str2Boolean(req.query.pendding as string);
+        const bought: any = req.query.bought;
+        const pendding: any = req.query.pendding;
+
 
         const json2csv = new Parser();
         const costumerInstances: CostumersAttrebues[] =
-            await db.costumers.findAll({ where: { bought: bought, pendding: pendding } });
+            await db.costumers.findAll({ where: generateWhereClause(bought, pendding) });
+
         if (!costumerInstances.length)
-            return res.status(404).send({ message: 'Costumers not found' });
+            throw new BadRequestError({ code: 404, message: 'Costumers not found', logging: false })
 
-        // Map over the instances and get only the data values
         const costumers = costumerInstances.map((instance: any) => instance.dataValues);
-        console.log(costumers)
-
         const csv = json2csv.parse(costumers);
         const directoryPath = path.join(__dirname, '../../public/csv_files/');
-
         const filename = path.join(directoryPath, 'customers.csv');
+
         if (!fs.existsSync(directoryPath))
             fs.mkdirSync(directoryPath, { recursive: true });
         fs.writeFileSync(filename, csv);
+
         await SenDownloadableFile(res, filename);
+
         log(`File ${filename} sent`);
         return;
     } catch (error) {
         next(error);
     }
 };
+
+export const addCostumer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { email, referenceSite, language } = req.body;
+        if (!email || !referenceSite || !language)
+            throw new BadRequestError({ code: 404, message: 'Invalide Body Prop', logging: false })
+        const costumer = await db.costumers.create({
+            Email: email,
+            referenceSite: referenceSite,
+            language: language,
+            bought: false,
+            pendding: false,
+            bought_at: null,
+            pendding_at: null,
+        });
+        res.status(200).json(costumer);
+    } catch (error) {
+        next(error);
+    }
+}
+
+
+export const SearchCostumer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { searchQuery } = req.query;
+        const costumers = await db.costumers.findAll({
+            where: searchQuery ? {
+                [Op.or]: [
+                    { Email: { [Op.like]: `%${searchQuery}%` } },
+                    { referenceSite: { [Op.like]: `%${searchQuery}%` } },
+                    { language: { [Op.like]: `%${searchQuery}%` } }
+                ]
+            } : {}
+        });
+        res.status(200).json(costumers);
+    } catch (error) {
+        next(error);
+    }
+}

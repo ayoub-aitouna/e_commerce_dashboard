@@ -17,7 +17,6 @@ require('express-async-errors');
 dotenv.config();
 const port = process.env.PORT || 3000;
 const app: Express = express();
-
 app.use(cors());
 
 
@@ -33,9 +32,8 @@ app.use("/api/v1/statics", StaticsRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-
-//
-db.sequelize.sync({ force: false }).then(async () => {
+const RESET = false;
+db.sequelize.sync({ force: RESET }).then(async () => {
   const adminlist = await Admins();
   SeedAdminTable(db, adminlist);
   app.listen(port, () => {

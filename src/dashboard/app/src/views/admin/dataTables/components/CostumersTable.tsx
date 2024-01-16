@@ -49,6 +49,26 @@ export default function ColumnTable(props: { tableData: any }) {
 				</Flex>
 			)
 		}),
+		columnHelper.accessor('referenceSite', {
+			id: 'referenceSite',
+			header: () => (
+				<Text
+					justifyContent='space-between'
+					align='center'
+					fontSize={{ sm: '10px', lg: '12px' }}
+					color='gray.400'>
+					Reference Site
+				</Text>
+			),
+			cell: (info: any) => (
+				<Flex align='center'>
+					<Text color={textColor} fontSize='sm' fontWeight='700'>
+						{info.getValue()}
+					</Text>
+				</Flex>
+			)
+		}),
+		
 		columnHelper.accessor('bought', {
 			id: 'bought',
 			header: () => (

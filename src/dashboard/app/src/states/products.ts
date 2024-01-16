@@ -33,6 +33,7 @@ type Store = {
     updateDns: (newDns: string) => Promise<void>;
     deleteProduct: (id: number) => Promise<void>;
     addProduct: (product: ProductAttributes) => Promise<void>;
+    searchProduct: (searchQuery?: String) => Promise<void>;
 };
 
 const GetFilters = (filters: Filters) => {
@@ -93,5 +94,10 @@ export const productStore = create<Store>((set) => ({
     addProduct: async (product) => {
         const { data } = await axios.post(`${BaseUrl}/product`, product);
         set((state) => ({ products: [...state.products, data.result] }));
+    },
+    searchProduct: async (searchQuery?: String) => {
+        const { data } = await axios.get(
+            `${BaseUrl}/product/Search/?searchQuery=${searchQuery}`);
+        set({ products: data });
     },
 }));
