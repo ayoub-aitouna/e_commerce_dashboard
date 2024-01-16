@@ -1,4 +1,4 @@
-import { Flex, Box, Table, Checkbox, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } from '@chakra-ui/react';
+import { Flex, Box, Table, IconButton, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } from '@chakra-ui/react';
 import * as React from 'react';
 
 import {
@@ -17,6 +17,7 @@ import { ParseDate } from 'utils/Dateparser';
 
 
 import { CostumersAttrebues } from 'states/costumers';
+import { DownloadIcon } from '@chakra-ui/icons';
 
 const columnHelper = createColumnHelper<CostumersAttrebues>();
 
@@ -27,6 +28,7 @@ export default function ColumnTable(props: { tableData: any }) {
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
 	const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 	let defaultData = tableData;
+
 	const columns = [
 		columnHelper.accessor('Email', {
 			id: 'Email',
@@ -112,12 +114,14 @@ export default function ColumnTable(props: { tableData: any }) {
 			cell: (info) => (
 				<Text color={textColor} fontSize='sm' fontWeight='700'>
 					{
-					ParseDate(info.getValue())}
+						ParseDate(info.getValue())}
 				</Text>
 			)
 		}),
 	];
+
 	const [data, setData] = React.useState(() => [...defaultData]);
+
 	const table = useReactTable({
 		data,
 		columns,
@@ -129,13 +133,20 @@ export default function ColumnTable(props: { tableData: any }) {
 		getSortedRowModel: getSortedRowModel(),
 		debugTable: true
 	});
+
+	React.useEffect(() => {
+		defaultData = tableData;
+		setData(defaultData);
+		console.log(tableData);
+	}, [tableData]);
+
 	return (
 		<Card flexDirection='column' w='100%' px='0px' overflowX={{ sm: 'scroll', lg: 'hidden' }}>
 			<Flex px='25px' mb="8px" justifyContent='space-between' align='center'>
 				<Text color={textColor} fontSize='22px' mb="4px" fontWeight='700' lineHeight='100%'>
-					Check Table
+					Costumers Table
 				</Text>
-				<Menu />
+	
 			</Flex>
 			<Box>
 				<Table variant='simple' color='gray.500' mb='24px' mt="12px">

@@ -1,14 +1,15 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
+import Costumers from 'views/admin/dataTables/Costumers';
 
 export interface CostumersAttrebues {
-	Email: string;
-	bought: boolean;
-	bought_at: Date;
-	pendding: boolean;
-	pendding_at: Date;
-	created_at: Date;
+    Email: string;
+    bought: boolean;
+    bought_at: Date;
+    pendding: boolean;
+    pendding_at: Date;
+    created_at: Date;
 }
 
 export interface Filters {
@@ -26,24 +27,33 @@ type Store = {
 const GetFilters = (filters: Filters) => {
     let result = '?';
     if (filters.bought !== null && filters.bought !== undefined)
-        result += `type=${filters.bought}&`;
+        result += `bought=${filters.bought}&`;
     if (filters.pending !== null && filters.pending !== undefined)
-        result += `sold=${filters.pending}&`;
+        result += `pendding=${filters.pending}&`;
     if (filters.page !== null && filters.page !== undefined)
         result += `page=${filters.page}`;
     return result;
 };
 
 
-export const costumerStore = create<Store>((set : any) => ({
+export const costumerStore = create<Store>((set: any) => ({
     costumers: [] as CostumersAttrebues[],
     getCostumers: async (filters: Filters) => {
         const { data } = await axios.get(
-            `${BaseUrl}/product/${GetFilters(filters)}`);
-        set({ products: data });
+            `${BaseUrl}/costumers/${GetFilters(filters)}`);
+        set({ costumers: data });
+
     },
     downloadCostumers: async (filters: Filters) => {
         const { data } = await axios.get(
-            `${BaseUrl}/product/${GetFilters(filters)}`);
+            `${BaseUrl}/costumers/save/${GetFilters(filters)}`);
+
+        const url = window.URL.createObjectURL(new Blob([data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${new Date().getTime()}-Customers-List.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     },
 }));

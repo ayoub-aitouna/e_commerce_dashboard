@@ -1,21 +1,9 @@
 import nodemailer from 'nodemailer';
 import dotenv from "dotenv";
 import { log } from 'console';
-import i18n from 'i18next';
+import { languageEnum, languageSettings } from '../languages';
 
 dotenv.config();
-
-
-async function initI18n() {
-    await i18n.init({
-        resources: {
-            en: require('../locales/en/translation.json'),
-            fr: require('../locales/fr/translation.json'),
-            // Add more languages here
-        },
-        fallbackLng: 'en',
-    });
-}
 
 
 export const SendEmail = async (mailOptions: any) => {
@@ -48,54 +36,111 @@ function getBaseUrl(url: URL) {
     return `${url.protocol}//${url.hostname}${url.port ? ':' + url.port : ''}`;
 }
 
-export const generateEmailTemplate = async (username: string, password: string, url: URL, language: string) => {
-    await initI18n();
-    i18n.changeLanguage(language);
-    console.log('Current language:', i18n.language);
-    console.log('Loaded translations:', i18n.store.data);
-    console.log('thanks translations:', i18n.t('thanks'));
+
+
+/**
+ * Generates an email template with the provided information.
+ * 
+ * @param username - The username of the customer.
+ * @param password - The password of the customer.
+ * @param url - The URL of the website.
+ * @param site - The name of the website.
+ * @param language - The language of the email.
+ * @param phone - The phone number of the customer service.
+ * @param email - The email address of the customer service.
+ * @returns The generated email template as a string.
+ */
+export const generateEmailTemplate = async (
+    username: string,
+    password: string,
+    url: URL,
+    site: string,
+    language: languageEnum,
+    phone: string,
+    email: string
+) => {
+    const translate = (key: string) => languageSettings[language][key] || key;
+    const referenceSiteUrl = new URL(site);
 
     return `
         <html>
-            <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                    }
-                    p {
-                        color: #333;
-                    }
-                    hr {
-                        border: none;
-                        border-top: 1px solid #ddd;
-                    }
-                    a {
-                        color: #337ab7;
-                        text-decoration: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <p>${i18n.t('greeting')}</p>
-                <p>${i18n.t('thanks')}</p>
-                <p>Here are all the links you'll need to watch your favorite TV channels with your subscription:</p>
-                <p>Xtream Codes:</p>
-                <p>Playlist Name: Name</p>
-                <p>Username: ${username}</p>
-                <p>Password: ${password}</p>
-                <p>Host/API/URL: ${getBaseUrl(url)}</p>
+        <head>
+            <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #000;
+            }
+    
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+    
+            h1, h2, h3, h4, h5, h6 {
+                color: #333;
+                margin-bottom: 10px;
+            }
+    
+            p {
+                color: #555;
+                margin-bottom: 15px;
+                line-height: 1.6;
+            }
+    
+            hr {
+                border: none;
+                border-top: 1px solid #ddd;
+                margin: 20px 0;
+            }
+    
+            a {
+                color: #337ab7;
+                text-decoration: none;
+            }
+    
+            .contact-icon {
+                color: #337ab7;
+                font-size: 20px;
+                margin-right: 5px;
+            }
+            .indint {
+                text-indent: 20px;
+            }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>${translate("greeting")}</h2>
+                <p>${translate("orderSummarypart1")} ${referenceSiteUrl.hostname} ${translate("orderSummarypart2")}</p>
+                <p>${translate("linksInfo")}</p>
+                <p>${translate("xtreamCodes")}</p>
+                <p class="indint" >${translate("playlistName")} ${referenceSiteUrl.hostname.split('.')[1]}</p>
+                <p class="indint" >${translate("usernameLabel")} ${username}</p>
+                <p class="indint" >${translate("passwordLabel")} ${password}</p>
+                <p class="indint" >${translate("hostApiUrlLabel")} ${getBaseUrl(url)}</p>
                 <hr>
-                <p>M3U LINK:</p>
-                <p>${url.toString()}</p>
+                <p>${translate("m3uLink")}</p>
+                <p class="indint" >${url.toString()}</p>
                 <hr>
-                <p>If you need help, do not hesitate to contact us on WhatsApp at: +33</p>
-                <p>Please do not hesitate to contact our customer service team if you have any questions or concerns. They are available 24 hours a day, 7 days a week.</p>
-                <p>WhatsApp: +33</p>
-                <p>Email: contact@gmail.com</p>
-                <p>Sincerely,</p>
-                <p>The Kingiptv team</p>
-                <p><a href="https://site.com">https://site.com</a></p>
-            </body>
+                <p>${translate("helpContact")} ${phone}</p>
+                <p>${translate("customerServiceInfo")}</p>
+                <p>
+                    <span class="contact-icon">&#9742;</span> ${translate("whatsappLabel")} ${phone}
+                </p>
+                <p>
+                    <span class="contact-icon">&#9993;</span> ${translate("emailLabel")} ${email}
+                </p>
+                <p>${translate("signature")}</p>
+                <p>${translate("teamName")}</p>
+                <p><a href="${site}">${site}</a></p>
+            </div>
+        </body>
         </html>
     `;
-}
+};

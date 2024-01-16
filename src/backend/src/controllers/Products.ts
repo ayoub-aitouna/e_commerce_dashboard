@@ -4,29 +4,38 @@ import { CostumersAttrebues } from "@/models/Atterbuites/Costumers";
 import { BadRequestError, InvalideBody } from "../errors";
 import { log } from "console";
 import { SendEmail, generateEmailTemplate } from "../mailer/mailer";
+import { languageEnum, } from '../languages';
+
 import db from "../models";
 import Queue from 'better-queue';
-import { str2Boolean } from '../utils/str2Boolean';
+import dotenv from "dotenv";
+
+dotenv.config();
+
+
 
 let emailQueue = new Queue(async (emailTask: any, cb: any) => {
-    const { email, url } = emailTask;
+    const { email, url, language, site } = emailTask;
     const username = url.searchParams.get('username');
     const pass = url.searchParams.get('password');
-
-    await SendEmail({
-        to: email,
-        subject: 'Product Purchase Confirmation',
-        text: 'Thank you for purchasing our product.',
-        html: await generateEmailTemplate(username, pass, url, 'fr'),
-    })
+    try {
+        await SendEmail({
+            to: email,
+            subject: 'Product Purchase Confirmation',
+            text: 'Thank you for purchasing our product.',
+            html: await generateEmailTemplate(username, pass, url, site, language,
+                process.env.PHONE_NUMBER as string, process.env.MAILER_USER as string),
+        })
+    } catch (error) {
+        console.log(error);
+    }
     cb();
 });
 
-const SendMailToCostumer = async (email: string, url: URL) => {
-    emailQueue.push({ email, url });
+const SendMailToCostumer = async (email: string, url: URL, language: languageEnum, site: string) => {
+    emailQueue.push({ email, url, language, site });
 
 }
-
 
 function generateWhereClause(sold: any, type: any) {
     let where = {} as any;
@@ -45,7 +54,7 @@ function generateWhereClause(sold: any, type: any) {
 export const ProductList = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 50;
+        const limit = parseInt(req.query.limit as string) || 15;
         const sold: any = req.query.sold;
         const type: any = req.query.type;
 
@@ -92,7 +101,7 @@ export const UpdateUrl = async (req: Request, res: Response, next: NextFunction)
         const costumers: CostumersAttrebues[] = await db.costumers.findAll({ where: { bought: true } });
         for (let costumer of costumers) {
             log("UpdateUrl Sending email to: ", costumer.Email);
-            SendMailToCostumer(costumer.Email, new URL(UpdatedDns));
+            SendMailToCostumer(costumer.Email, new URL(UpdatedDns), costumer.language as languageEnum, costumer.referenceSite);
         }
 
         return res.status(200).send({ msg: "ok" });
@@ -138,7 +147,7 @@ export const AddNewProduct = async (req: Request, res: Response, next: NextFunct
                     });
 
                 SendMailToCostumer(pendding_costumer.Email,
-                    new URL(productvalues.iptv_url));
+                    new URL(productvalues.iptv_url), pendding_costumer.language, pendding_costumer.referenceSite);
             }
 
             const result = await db.product.create(productvalues, { transaction: t });
@@ -174,7 +183,7 @@ export const EditOnAProduct = async (req: Request, res: Response, next: NextFunc
     }
 }
 
-const CreateCostumer = async (email: string, bought: boolean, pendding: boolean): Promise<CostumersAttrebues> => {
+const CreateCostumer = async (email: string, bought: boolean, pendding: boolean, referenceSite: string): Promise<CostumersAttrebues> => {
     const costumer: CostumersAttrebues = await db.costumers.create({
         Email: email,
         bought: bought,
@@ -183,29 +192,42 @@ const CreateCostumer = async (email: string, bought: boolean, pendding: boolean)
     return costumer;
 }
 
+
+/**
+ * Handles the request to create a new product.
+ * 
+ * @param {string} api_token - The API token for authentication.
+ * @param {string} email - The email of the user making the request.
+ * @param {string} selected_plan - The selected plan for the product.
+ * @param {string} referenceSite - The referenceSite for the product.
+ * @param {string} language - The language for the email.
+ */
 export const SellProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { api_token, email, selected_plan } = req.body;
+        const { api_token, email, selected_plan, referenceSite, language } = req.body;
 
-        if (!Object.values(IpTvType).includes(selected_plan) || !api_token || !email)
-            throw new InvalideBody();
+        if (!Object.values(IpTvType).includes(selected_plan) || !api_token || !email
+            || !referenceSite || !language)
+            throw new BadRequestError({ code: 400, message: "Invalid body properties", logging: true });
+        if (!checkIfUrlIsValide(referenceSite))
+            throw new BadRequestError({ code: 400, message: "Invalid referenceSite", logging: true });
 
         const { count } = await db.admin.findAndCountAll({ where: { api_token: api_token } });
         if (count === 0)
-            return res.status(401).json({ msg: "unauthorized" });
+            return res.status(401).json({ msg: "Unauthorized" });
 
         const product: ProductAttributes = await db.product.findOne({ where: { sold: false, type: selected_plan } });
         if (!product) {
             log("No product found ", email);
-            await CreateCostumer(email, false, true);
+            await CreateCostumer(email, false, true, referenceSite);
             return res.status(200).json({ msg: "pendding" });
         }
 
 
-        await SendMailToCostumer(email, new URL(product.iptv_url));
+        await SendMailToCostumer(email, new URL(product.iptv_url), language, referenceSite);
         await db.product.update({ sold: true }, { where: { id: product.id } });
 
-        let costumer = await CreateCostumer(email, true, false);
+        let costumer = await CreateCostumer(email, true, false, referenceSite);
         await db.purchases.create({
             product_id: product.id,
             Costumer_id: costumer.id,

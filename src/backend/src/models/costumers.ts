@@ -9,6 +9,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     implements CostumersAttrebues {
     id!: Number;
     Email!: string;
+    referenceSite!: string;
+    language!: string;
     bought!: boolean;
     bought_at!: Date;
     pendding!: boolean;
@@ -55,6 +57,16 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.DATE,
         defaultValue: null,
         allowNull: true,
+      },
+      referenceSite: {
+        type: DataTypes.STRING,
+        defaultValue: "none",
+        allowNull: false,
+      },
+      language: {
+        type: DataTypes.STRING,
+        defaultValue: "en",
+        allowNull: false,
       },
       created_at: {
         type: DataTypes.DATE,

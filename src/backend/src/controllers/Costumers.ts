@@ -10,14 +10,13 @@ import { str2Boolean } from '../utils/str2Boolean';
 
 export const ListCostumers = async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parseInt(req.query.limit as string) || 15;
     let bought = str2Boolean(req.query.bought as string);
     let pendding = str2Boolean(req.query.pendding as string);
 
     let offset = (page - 1) * limit;
     try {
         const constumers = await db.costumers.findAll({
-
             limit: limit,
             offset: offset,
             where: {
@@ -51,11 +50,16 @@ export const SaveCostumers = async (req: Request, res: Response, next: NextFunct
         let pendding = str2Boolean(req.query.pendding as string);
 
         const json2csv = new Parser();
-        const costumer: CostumersAttrebues[] =
+        const costumerInstances: CostumersAttrebues[] =
             await db.costumers.findAll({ where: { bought: bought, pendding: pendding } });
-        if (!costumer.length)
+        if (!costumerInstances.length)
             return res.status(404).send({ message: 'Costumers not found' });
-        const csv = json2csv.parse(costumer);
+
+        // Map over the instances and get only the data values
+        const costumers = costumerInstances.map((instance: any) => instance.dataValues);
+        console.log(costumers)
+
+        const csv = json2csv.parse(costumers);
         const directoryPath = path.join(__dirname, '../../public/csv_files/');
 
         const filename = path.join(directoryPath, 'customers.csv');
@@ -69,18 +73,3 @@ export const SaveCostumers = async (req: Request, res: Response, next: NextFunct
         next(error);
     }
 };
-
-
-
-/*
-  costumer.push({
-            id: 1,
-            Email: 'test@example.com',
-            bought: false,
-            bought_at: new Date(),
-            pendding: true,
-            pendding_at: new Date(),
-            created_at: new Date(),
-            updated_at: new Date()
-        });
-*/
