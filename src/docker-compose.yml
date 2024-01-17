@@ -45,14 +45,14 @@ volumes:
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './backend/'
+      device: '/home/aaitouna/e_commerce_dashboard/src/backend/'
 
   dashboard_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './dashboard/app/'
+      device: '/home/aaitouna/e_commerce_dashboard/src/dashboard/app/'
   postgres_data:
 
 

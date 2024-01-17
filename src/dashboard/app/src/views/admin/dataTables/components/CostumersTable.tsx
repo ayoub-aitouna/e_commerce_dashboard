@@ -18,12 +18,13 @@ import { ParseDate } from 'utils/Dateparser';
 
 import { CostumersAttrebues } from 'states/costumers';
 import { DownloadIcon } from '@chakra-ui/icons';
+import { title } from 'process';
 
 const columnHelper = createColumnHelper<CostumersAttrebues>();
 
 // const columns = columnsDataCheck;
-export default function ColumnTable(props: { tableData: any }) {
-	const { tableData } = props;
+export default function ColumnTable(props: { tableData: any, Title?: String | undefined }) {
+	const { tableData,Title } = props;
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
 	const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -68,7 +69,7 @@ export default function ColumnTable(props: { tableData: any }) {
 				</Flex>
 			)
 		}),
-		
+
 		columnHelper.accessor('bought', {
 			id: 'bought',
 			header: () => (
@@ -164,9 +165,9 @@ export default function ColumnTable(props: { tableData: any }) {
 		<Card flexDirection='column' w='100%' px='0px' overflowX={{ sm: 'scroll', lg: 'hidden' }}>
 			<Flex px='25px' mb="8px" justifyContent='space-between' align='center'>
 				<Text color={textColor} fontSize='22px' mb="4px" fontWeight='700' lineHeight='100%'>
-					Costumers Table
+					{Title ? Title : "Costumers Table"}
 				</Text>
-	
+
 			</Flex>
 			<Box>
 				<Table variant='simple' color='gray.500' mb='24px' mt="12px">

@@ -14,6 +14,7 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  Spinner,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -29,7 +30,7 @@ import { RiEyeCloseLine } from "react-icons/ri";
 import Cookies from 'universal-cookie';
 import { User } from "states/user";
 import axios from "axios";
-import { AxiosResponse, AxiosError } from 'axios';
+import { AxiosResponse } from 'axios';
 
 interface SignInProps {
   message: string;
@@ -57,8 +58,12 @@ function SignIn() {
   const history = useHistory();
   if (cookies.get(jwt_cockies_name))
     history.push('/admin');
+  const Sleep = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   const SignInRequest = async () => {
-    setSingInProps({ message: "Please Wait...", loading: true });
+    setSingInProps({ message: "", loading: true });
+
     try {
       const res: AxiosResponse = await axios.post(`${BaseUrl}/auth`, {
         email: UserCredets.email,
@@ -68,9 +73,9 @@ function SignIn() {
       cookies.set(jwt_cockies_name, user_data.AccessToken);
       cookies.set(Jwt_Refresh_Cockies_Name, user_data.RefreshToken);
       history.push('/admin');
-    } catch (error) {
-      setSingInProps({ message: ((error as AxiosError).response?.data as resError).errors.message, loading: false });
-
+    } catch (error: any) {
+      if (error?.response?.status !== 200)
+        setSingInProps({ message: "Incorrect Email or Password", loading: false });
     } finally {
       setSingInProps((val) => {
         return { ...val, loading: false }
@@ -139,6 +144,7 @@ function SignIn() {
               placeholder='mail@simmmple.com'
               mb='24px'
               fontWeight='500'
+              disabled={SingInProps.loading}
               onChange={(e) => {
                 setUserCredets({ ...UserCredets, email: e.target.value });
               }}
@@ -159,6 +165,7 @@ function SignIn() {
                 placeholder='Min. 8 characters'
                 mb='24px'
                 size='lg'
+                disabled={SingInProps.loading}
                 type={show ? "text" : "password"}
                 onChange={(e) => {
                   setUserCredets({ ...UserCredets, password: e.target.value });
@@ -197,6 +204,7 @@ function SignIn() {
               fontWeight='500'
               w='100%'
               h='50'
+              leftIcon={SingInProps.loading ? <Spinner /> : null}
               onClick={() => { SignInRequest() }}
               mb='24px'>
               Sign In

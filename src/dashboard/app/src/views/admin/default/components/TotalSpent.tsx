@@ -3,11 +3,11 @@ import { Box, Button, Flex, Icon, Text, useColorModeValue } from '@chakra-ui/rea
 // Custom components
 import Card from 'components/card/Card';
 import LineChart from 'components/charts/LineChart';
-import { IoCheckmarkCircle } from 'react-icons/io5';
 import { MdBarChart, MdOutlineCalendarToday } from 'react-icons/md';
 // Assets
-import { RiArrowUpSFill } from 'react-icons/ri';
-import { lineChartDataTotalSpent, lineChartOptionsTotalSpent } from 'variables/charts';
+import { lineChartOptionsTotalSpent } from 'variables/charts';
+import { StatisticsStore } from "states/statistics";
+import { useEffect } from "react";
 
 export default function TotalSpent(props: { [x: string]: any }) {
 	const { ...rest } = props;
@@ -21,6 +21,21 @@ export default function TotalSpent(props: { [x: string]: any }) {
 	const bgButton = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
 	const bgHover = useColorModeValue({ bg: 'secondaryGray.400' }, { bg: 'whiteAlpha.50' });
 	const bgFocus = useColorModeValue({ bg: 'secondaryGray.300' }, { bg: 'whiteAlpha.100' });
+
+	const { YearState, getYearSatate } = StatisticsStore((state) => ({
+		YearState: state.YearState,
+		getYearSatate: state.getYearSatate,
+	}));
+
+	useEffect(() => {
+		getYearSatate();
+		console.log("YearlyRevenue.tsx", YearState);
+	}, [null]);
+
+	useEffect(() => {
+		console.log("YearlyRevenue.tsx", YearState);
+	}, [YearState]);
+
 	return (
 		<Card justifyContent='center' alignItems='center' flexDirection='column' w='100%' mb='0px' {...rest}>
 			<Flex align='center' justify='space-between' w='100%' pe='20px' pt='5px'>
@@ -47,29 +62,25 @@ export default function TotalSpent(props: { [x: string]: any }) {
 			<Flex w='100%' flexDirection={{ base: 'column', lg: 'row' }}>
 				<Flex flexDirection='column' me='20px' mt='28px'>
 					<Text color={textColor} fontSize='34px' textAlign='start' fontWeight='700' lineHeight='100%'>
-						$37.5K
+						{YearState.currentMonthSells}
 					</Text>
 					<Flex align='center' mb='20px'>
 						<Text color='secondaryGray.600' fontSize='sm' fontWeight='500' mt='4px' me='12px'>
-							Total Spent
-						</Text>
-						<Flex align='center'>
-							<Icon as={RiArrowUpSFill} color='green.500' me='2px' mt='2px' />
-							<Text color='green.500' fontSize='sm' fontWeight='700'>
-								+2.45%
-							</Text>
-						</Flex>
-					</Flex>
-
-					<Flex align='center'>
-						<Icon as={IoCheckmarkCircle} color='green.500' me='4px' />
-						<Text color='green.500' fontSize='md' fontWeight='700'>
-							On track
+							{new Date().toLocaleString('default', { month: 'long' })} Sells
 						</Text>
 					</Flex>
 				</Flex>
 				<Box minH='260px' minW='75%' mt='auto'>
-					<LineChart chartData={lineChartDataTotalSpent} chartOptions={lineChartOptionsTotalSpent} />
+					{YearState.monthsOfYear.length !== 0 ?
+						<LineChart chartData={[
+							{
+								name: 'Total Selles',
+								data: YearState.monthsOfYear,
+							},
+						]}
+							chartOptions={lineChartOptionsTotalSpent} />
+						: null
+					}
 				</Box>
 			</Flex>
 		</Card>

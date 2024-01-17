@@ -97,11 +97,11 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
     const handleSave = async () => {
         try {
             setPop({ ...PopUp, error: null, Loading: true });
-            if (PopUp.Type == "INSERT")
+            if (PopUp.Type === "INSERT")
                 await addProduct(PopUp.row);
-            else if (PopUp.Type == "EDIT")
+            else if (PopUp.Type === "EDIT")
                 await editProduct(PopUp.row);
-            else if (PopUp.Type == "UPDATE")
+            else if (PopUp.Type === "UPDATE")
                 await updateDns(PopUp.extraData);
 
             setPop({ ...PopUp, isOpen: false, error: null, Loading: false });
