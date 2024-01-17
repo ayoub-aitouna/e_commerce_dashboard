@@ -31,7 +31,8 @@ const CalculatByQueryAvg = async (query: any) => {
   for (const product of lastMonthProductsInserts)
     Total += Prices.get(product.type) || 0;
 
-  return Total / lastMonthProductsInserts.length;
+  return (Total / lastMonthProductsInserts.length).toFixed(1);
+
 };
 
 const GetSDate = (NumberOfDays: number, NumberOMonths: number) => {

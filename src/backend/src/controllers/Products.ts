@@ -192,9 +192,18 @@ export const AddNewProduct = async (
                     pendding_costumer.language,
                     pendding_costumer.referenceSite
                 );
+
             }
 
             const result = await db.product.create(productvalues, { transaction: t });
+
+            if (pendding_costumer) {
+                await db.purchases.create({
+                    product_id: result.id,
+                    Costumer_id: pendding_costumer.id,
+                }, { transaction: t });
+            }
+
             return result;
         });
 
@@ -202,6 +211,7 @@ export const AddNewProduct = async (
             result,
         });
     } catch (error: any) {
+        console.log(error);
         next(error);
     }
 };
@@ -300,6 +310,7 @@ export const SellProduct = async (
         const product: ProductAttributes = await db.product.findOne({
             where: { sold: false, type: selected_plan },
         });
+
         if (!product) {
             await CreateCostumer(email, false, true, referenceSite, language);
             return res.status(200).json({ msg: "pendding" });

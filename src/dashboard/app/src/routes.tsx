@@ -1,5 +1,6 @@
 import { Icon } from '@chakra-ui/react';
-import { MdBarChart, MdPerson, MdHome, MdLock, MdOutlineShoppingCart } from 'react-icons/md';
+import { MdBarChart, MdConnectedTv, MdHome, MdLock, MdGroups } from 'react-icons/md';
+import { VscReferences } from "react-icons/vsc";
 
 // unused Pages
 /*
@@ -12,9 +13,9 @@ import { MdBarChart, MdPerson, MdHome, MdLock, MdOutlineShoppingCart } from 'rea
 // Admin Imports
 import MainDashboard from 'views/admin/default';
 
-import DataTables from 'views/admin/dataTables';
 import Products from 'views/admin/dataTables/Products';
 import Costumers from 'views/admin/dataTables/Costumers';
+import Reference from 'views/admin/dataTables/Reference';
 
 // Auth Imports
 
@@ -29,16 +30,24 @@ const routes = [
 	{
 		name: 'IPTV Products',
 		layout: '/admin',
-		icon: <Icon as={MdBarChart} width='20px' height='20px' color='inherit' />,
+		icon: <Icon as={MdConnectedTv} width='20px' height='20px' color='inherit' />,
 		path: '/data-iptv',
 		component: Products
 	},
 	{
-		name: 'Petential Costumers',
+		name: 'Costumers',
 		layout: '/admin',
-		icon: <Icon as={MdBarChart} width='20px' height='20px' color='inherit' />,
+		icon: <Icon as={MdGroups} width='20px' height='20px' color='inherit' />,
 		path: '/data-costumers',
 		component: Costumers
+	}
+	,
+	{
+		name: 'Reference',
+		layout: '/admin',
+		icon: <Icon as={VscReferences} width='20px' height='20px' color='inherit' />,
+		path: '/data-reference',
+		component: Reference
 	}
 ];
 

@@ -1,5 +1,5 @@
 import create from "zustand";
-import axios, { AxiosHeaders } from "axios";
+import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
 import { BaseUrl, jwt_cockies_name, Jwt_Refresh_Cockies_Name } from "variables/Api";
 import { IpTvType } from "./products";
 import Cookies from 'universal-cookie';
@@ -42,21 +42,35 @@ type Store = {
   getlatestPurchases: () => Promise<void>;
 };
 
-const Config = () => {
+const Config = async () => {
   const cookies = new Cookies(null, { path: '/' });
-  return {
-    headers: {
-      Authorization: `Bearer ${cookies.get(jwt_cockies_name)}`,
-    },
+  const token = cookies.get(jwt_cockies_name);
+
+  if (token) {
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  }
+  return {};
+};
+
+
+const ResetToken = async () => {
+  const cookies = new Cookies(null, { path: '/' });
+  const token = cookies.get(jwt_cockies_name);
+  const refreshToken = cookies.get(Jwt_Refresh_Cockies_Name);
+
+  if (token && refreshToken) {
+    const { data }: { data: { token: string, refreshToken: string } } = await axios.post(
+      `${BaseUrl}/auth/refresh-token`,
+      { refreshToken }
+    );
+    cookies.set(jwt_cockies_name, data.token, { path: '/' });
+    cookies.set(Jwt_Refresh_Cockies_Name, data.refreshToken, { path: '/' });
   }
 }
-
-const MAxios = (Url: string, Body: any) => {
-  const { data }: { data: IWeekState } = await axios.get(
-    `${BaseUrl}/${endpoint}/week`, Config()
-  );
-}
-
 
 export const StatisticsStore = create<Store>((set: any) => ({
   Statics: {} as IStatics,
@@ -67,15 +81,30 @@ export const StatisticsStore = create<Store>((set: any) => ({
   } as IYearState,
   latestPurchases: [] as IPurchase[],
   getStats: async () => {
-    const { data }: { data: IWeekState } = await axios.get(
-      `${BaseUrl}/${endpoint}/`
+    const response = await axios.get(
+      `${BaseUrl}/${endpoint}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${new Cookies(null, { path: '/' }).get(jwt_cockies_name)}`,
+        },
+      }
     );
-    console.log(data);
+    const { data }: { data: IWeekState } = response;;
+    if (response.status === 403) {
+      console.log("403");
+      await ResetToken();
+      // set.getStats();
+    }
     set({ Statics: data });
   },
   getWeekSatate: async () => {
     const { data }: { data: IWeekState } = await axios.get(
-      `${BaseUrl}/${endpoint}/week`, Config()
+      `${BaseUrl}/${endpoint}/week`,
+      {
+        headers: {
+          Authorization: `Bearer ${new Cookies(null, { path: '/' }).get(jwt_cockies_name)}`,
+        },
+      }
     );
     set({ WeekState: { daysOfWeek: data.daysOfWeek, today: data.today } });
   },

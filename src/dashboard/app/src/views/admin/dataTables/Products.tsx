@@ -48,6 +48,7 @@ export default function Products() {
                         onChange={(e) => handleTypeFilterChange(e.target.value)}
                     >
                         <option value={IpTvType.Basic as string}>Basic</option>
+                        <option value={IpTvType.Gold as string}>Gold</option>
                         <option value={IpTvType.Premium as string}>Premium</option>
                     </Select>
                 </HStack>

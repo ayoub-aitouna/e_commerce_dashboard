@@ -4,6 +4,7 @@ import db from "./models";
 import AuthRouter from "./routes/Auth";
 import ProductRouter from "./routes/Products";
 import CostumersRouter from "./routes/Costumers";
+import ReferenceRouter from "./routes/Reference";
 import StaticsRouter from "./routes/Statics";
 
 import { errorHandler } from "./middleware/error-handler";
@@ -26,6 +27,7 @@ app.use(json());
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/product", ProductRouter);
 app.use("/api/v1/costumers", CostumersRouter);
+app.use("/api/v1/reference", ReferenceRouter);
 app.use("/api/v1/statics", StaticsRouter);
 
 
@@ -33,7 +35,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 const RESET = false;
-db.sequelize.sync({ force: RESET }).then(async () => {
+db.sequelize.sync({ force: true }).then(async () => {
   const adminlist = await Admins();
   SeedAdminTable(db, adminlist);
   app.listen(port, () => {

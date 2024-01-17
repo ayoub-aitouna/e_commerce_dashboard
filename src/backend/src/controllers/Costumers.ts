@@ -114,7 +114,7 @@ export const SearchCostumer = async (req: Request, res: Response, next: NextFunc
             where: searchQuery ? {
                 [Op.or]: [
                     { Email: { [Op.like]: `%${searchQuery}%` } },
-                    { referenceSite: { [Op.like]: `%${searchQuery}%` } },
+                    // { referenceSite: { [Op.like]: `%${searchQuery}%` } },
                     { language: { [Op.like]: `%${searchQuery}%` } }
                 ]
             } : {}

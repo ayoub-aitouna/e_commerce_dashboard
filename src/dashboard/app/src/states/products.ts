@@ -4,8 +4,9 @@ import { BaseUrl } from 'variables/Api';
 import { stat } from 'fs';
 
 export enum IpTvType {
-    Basic = "basic",
-    Premium = "premium",
+    Basic = "Basic",
+    Gold = "Gold",
+    Premium = "Premium",
 }
 
 export interface ProductAttributes {
