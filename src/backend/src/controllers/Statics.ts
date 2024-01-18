@@ -5,32 +5,64 @@ import { ProductAttributes, IpTvType } from "../models/Atterbuites/Product";
 
 const CalculatByQuery = async (query: any) => {
   let Total = 0;
-
-  let Prices = new Map<string, number>([
-    [IpTvType.Basic, 10],
-    [IpTvType.Premium, 30],
-  ]);
   const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({ where: query });
-  for (const product of lastMonthProductsInserts)
-    Total += Prices.get(product.type) || 0;
+    await db.product.findAll({
+      where: query,
+      include: [
+        {
+          model: db.reference,
+          required: true,
+        }
+      ]
+    });
+
+  for (const product of lastMonthProductsInserts) {
+    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
+    switch (product.type) {
+      case IpTvType.Basic:
+        Total += product.reference?.basic_price || 0;
+        break;
+      case IpTvType.Premium:
+        Total += product.reference?.premuim_price || 0;
+        break;
+      case IpTvType.Gold:
+        Total += product.reference?.gold_price || 0;
+        break;
+    }
+  }
   return Total;
 };
 
 const CalculatByQueryAvg = async (query: any) => {
   let Total = 0;
 
-  let Prices = new Map<string, number>([
-    [IpTvType.Basic, 10],
-    [IpTvType.Premium, 30],
-  ]);
 
   const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({ where: query });
-
-  for (const product of lastMonthProductsInserts)
-    Total += Prices.get(product.type) || 0;
-
+    await db.product.findAll({
+      where: query,
+      include: [
+        {
+          model: db.reference,
+          required: true,
+        }
+      ]
+    });
+  if (lastMonthProductsInserts.length === 0)
+    return (0);
+  for (const product of lastMonthProductsInserts) {
+    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
+    switch (product.type) {
+      case IpTvType.Basic:
+        Total += product.reference?.basic_price || 0;
+        break;
+      case IpTvType.Premium:
+        Total += product.reference?.premuim_price || 0;
+        break;
+      case IpTvType.Gold:
+        Total += product.reference?.gold_price || 0;
+        break;
+    }
+  }
   return (Total / lastMonthProductsInserts.length).toFixed(1);
 
 };

@@ -57,7 +57,8 @@ export const generateEmailTemplate = async (
     site: string,
     language: languageEnum,
     phone: string,
-    email: string
+    email: string,
+    Update: boolean = false
 ) => {
     const translate = (key: string) => languageSettings[language][key] || key;
     const referenceSiteUrl = new URL(site);
@@ -116,18 +117,27 @@ export const generateEmailTemplate = async (
         </head>
         <body>
             <div class="container">
-                <h2>${translate("greeting")}</h2>
-                <p>${translate("orderSummarypart1")} ${referenceSiteUrl.hostname} ${translate("orderSummarypart2")}</p>
-                <p>${translate("linksInfo")}</p>
-                <p>${translate("xtreamCodes")}</p>
-                <p class="indint" >${translate("playlistName")} ${referenceSiteUrl.hostname.split('.')[1]}</p>
-                <p class="indint" >${translate("usernameLabel")} ${username}</p>
-                <p class="indint" >${translate("passwordLabel")} ${password}</p>
-                <p class="indint" >${translate("hostApiUrlLabel")} ${getBaseUrl(url)}</p>
-                <hr>
-                <p>${translate("m3uLink")}</p>
-                <p class="indint" >${url.toString()}</p>
-                <hr>
+            <h2>${translate("greeting")}</h2>
+            <p>${translate("orderSummarypart1")} ${referenceSiteUrl.hostname} ${translate("orderSummarypart2")}</p>
+            <p>${translate("linksInfo")}</p>
+            <p>${translate("xtreamCodes")}</p>
+            ${Update ? `
+            <p>${translate("UpdatedDns")}</p>
+            <p class="indint" >${translate("dnsLabel")} ${url}</p>
+            `:
+            `
+            <p class="indint" >${translate("playlistName")} ${referenceSiteUrl.hostname.split('.')[1]}</p>
+            <p class="indint" >${translate("usernameLabel")} ${username}</p>
+            <p class="indint" >${translate("passwordLabel")} ${password}</p>
+            <p class="indint" >${translate("hostApiUrlLabel")} ${getBaseUrl(url)}</p>
+            <hr>
+            <p>${translate("m3uLink")}</p>
+            <p class="indint" >${url.toString()}</p>
+            <hr>
+        `}
+
+
+
                 <p>${translate("helpContact")} ${phone}</p>
                 <p>${translate("customerServiceInfo")}</p>
                 <p>

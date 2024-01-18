@@ -7,6 +7,7 @@ import db from '../models';
 import fs from 'fs';
 import { BadRequestError } from '../errors';
 import { Op } from 'sequelize';
+import { off } from 'process';
 
 
 function generateWhereClause(bought: any, pendding: any) {
@@ -16,27 +17,61 @@ function generateWhereClause(bought: any, pendding: any) {
         where.bought = bought;
     if (pendding !== undefined && pendding !== null)
         where.pendding = pendding;
+
     console.log("Costumers List Filters : ", where);
     return where;
 }
 
+//referenceSite
+const InnerJoin = (referenceSite: number | undefined, limit: number, offset: number) => {
+    if (referenceSite === undefined)
+        return [];
+    log("referenceSite : ", referenceSite);
+    return [
+        {
+            model: db.purchases,
+            required: true,
+            include: [
+                {
+                    model: db.product,
+                    required: true,
+                    include: [
+                        {
+                            model: db.reference,
+                            required: true,
+                            where: { id: referenceSite }
+                        }
+                    ]
+                }
+            ]
 
+        }
+    ]
+}
 export const ListCostumers = async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 15;
 
     const bought: any = req.query.bought;
     const pendding: any = req.query.pendding;
-    let offset = (page - 1) * limit;
+    const referenceSite: any = parseInt(req.query.referenceSite as string) || undefined;
 
+    let offset = (page - 1) * limit;
     try {
-        const constumers = await db.costumers.findAll({
-            limit: limit,
-            offset: offset,
+        log("referenceSite : ", referenceSite);
+        const props: any = {
             where: generateWhereClause(bought, pendding),
-        });
-        res.status(200).json(constumers);
+            include: InnerJoin(referenceSite, limit, offset),
+        }
+        if (referenceSite === undefined) {
+            props.limit = limit;
+            props.offset = offset;
+        }
+        const costumers = await db.costumers.findAll(props);
+        res.status(200).json(referenceSite !== undefined ?
+            costumers.slice(offset, offset + limit) : costumers);
     } catch (error) {
+        console.log(error);
         next(error);
     }
 };

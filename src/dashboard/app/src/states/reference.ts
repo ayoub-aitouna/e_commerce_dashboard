@@ -13,19 +13,26 @@ export interface ReferenceAttributes {
     updated_at: Date;
 }
 
+export interface IreferenceSite {
+    id: number;
+    site: string;
+}
 
 type Store = {
     references: ReferenceAttributes[];
+    referencesSites: IreferenceSite[];
     getReference: () => Promise<void>;
     editReference: (reference: ReferenceAttributes) => Promise<void>;
     deleteReference: (id: number) => Promise<void>;
     addReference: (reference: ReferenceAttributes) => Promise<void>;
     searchReference: (searchQuery?: String) => Promise<void>;
+    getReferenceSite: () => Promise<void>;
 };
 
 
 export const referenceStore = create<Store>((set: any) => ({
     references: [] as ReferenceAttributes[],
+    referencesSites: [] as IreferenceSite[],
     getReference: async () => {
         const { data } = await axios.get(
             `${BaseUrl}/reference/`);
@@ -61,4 +68,9 @@ export const referenceStore = create<Store>((set: any) => ({
             `${BaseUrl}/reference/Search/?searchQuery=${searchQuery}`);
         set({ references: data });
     },
+    getReferenceSite: async () => {
+        const { data } = await axios.get(
+            `${BaseUrl}/reference/site`);
+        set({ referencesSites: data });
+    }
 }));

@@ -1,5 +1,5 @@
 "use strict";
-import { Model, UUIDV4 } from "sequelize";
+import { Model } from "sequelize";
 
 import { ProductAttributes, IpTvType } from "./Atterbuites/Product";
 
@@ -18,7 +18,9 @@ module.exports = (sequelize: any, DataTypes: any) => {
 
     static associate(models: any) {
       // define association here
-      Product.belongsToMany(models.costumers, { through: "purchases" });
+      // Product.belongsToMany(models.costumers, { through: "purchases" });
+      Product.hasMany(models.purchases, { foreignKey: 'product_id' });
+      Product.belongsTo(models.reference);
     }
   }
   Product.init(

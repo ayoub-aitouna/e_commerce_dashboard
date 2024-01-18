@@ -35,7 +35,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 const RESET = false;
-db.sequelize.sync({ force: true }).then(async () => {
+db.sequelize.sync({ force: RESET }).then(async () => {
   const adminlist = await Admins();
   SeedAdminTable(db, adminlist);
   app.listen(port, () => {

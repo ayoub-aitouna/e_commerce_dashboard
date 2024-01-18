@@ -7,4 +7,5 @@ export interface ReferenceAttributes {
     gold_price: number;
     created_at: Date;
     updated_at: Date;
+    
 }

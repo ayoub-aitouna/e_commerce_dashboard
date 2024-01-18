@@ -1,7 +1,7 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
-import { get } from 'http';
+import { IreferenceSite } from 'states/reference';
 
 export interface CostumersAttrebues {
     id: Number;
@@ -20,6 +20,7 @@ export interface Filters {
     bought: boolean | null;
     pending: boolean | null;
     page: number;
+    referenceSite: number | null;
 }
 
 type Store = {
@@ -31,12 +32,19 @@ type Store = {
 
 const GetFilters = (filters: Filters) => {
     let result = '?';
+
     if (filters.bought !== null && filters.bought !== undefined)
         result += `bought=${filters.bought}&`;
+
     if (filters.pending !== null && filters.pending !== undefined)
         result += `pendding=${filters.pending}&`;
+
+    if (filters.referenceSite !== null && filters.referenceSite !== undefined)
+        result += `referenceSite=${filters.referenceSite}&`;
+
     if (filters.page !== null && filters.page !== undefined)
         result += `page=${filters.page}`;
+
     return result;
 };
 

@@ -109,6 +109,7 @@ export const UpdateUrl = async (
         const products: ProductAttributes[] = await db.product.findAll({
             where: { sold: false },
         });
+
         if (products.length !== 0) {
             const updatedProducts = products.map((product) => {
                 let url = new URL(product.iptv_url);
@@ -126,6 +127,8 @@ export const UpdateUrl = async (
         const costumers: CostumersAttrebues[] = await db.costumers.findAll({
             where: { bought: true },
         });
+
+
         for (let costumer of costumers) {
             log("UpdateUrl Sending email to: ", costumer.Email);
             SendMailToCostumer(
@@ -148,14 +151,15 @@ export const AddNewProduct = async (
     next: NextFunction
 ) => {
     try {
-        const { iptv_url, type } = req.body;
+        const { iptv_url, type, referenceId } = req.body;
 
-        if (!iptv_url || !Object.values(IpTvType).includes(type))
+        if (!iptv_url || !Object.values(IpTvType).includes(type) || referenceId === undefined || referenceId === null)
             throw new BadRequestError({
                 code: 400,
-                message: "Invalid Url Or Type",
+                message: "Invalid Url or Type or RefereceSite",
                 logging: true,
             });
+
         if (!checkIfUrlIsValide(iptv_url))
             throw new BadRequestError({
                 code: 400,
@@ -163,11 +167,13 @@ export const AddNewProduct = async (
                 logging: true,
             });
 
-        const productvalues = { iptv_url, type } as ProductAttributes;
+        const productvalues = { iptv_url, type, referenceId } as ProductAttributes;
 
         const result = await db.sequelize.transaction(async (t: any) => {
+            const referenceSite = await db.reference.findByPk(parseInt(referenceId as string) || 0, { transaction: t });
+
             const pendding_costumer = await db.costumers.findOne({
-                where: { pendding: true },
+                where: { pendding: true, referenceSite: referenceSite.site },
                 transaction: t,
             });
 
@@ -295,6 +301,7 @@ export const SellProduct = async (
                 message: "Invalid body properties",
                 logging: true,
             });
+
         if (!checkIfUrlIsValide(referenceSite))
             throw new BadRequestError({
                 code: 400,
@@ -305,42 +312,67 @@ export const SellProduct = async (
         const { count } = await db.admin.findAndCountAll({
             where: { api_token: api_token },
         });
+
         if (count === 0) return res.status(401).json({ msg: "Unauthorized" });
 
-        const product: ProductAttributes = await db.product.findOne({
-            where: { sold: false, type: selected_plan },
-        });
+        const product: ProductAttributes = await db.product.findOne(
+            {
+                include: [{
+                    model: db.reference,
+                    required: true,
+                    where: {
+                        site: referenceSite
+                    }
+                }],
+                where: { sold: false, type: selected_plan, },
+            }
+        );
 
         if (!product) {
             await CreateCostumer(email, false, true, referenceSite, language);
             return res.status(200).json({ msg: "pendding" });
         }
 
+        console.log("passed", product);
+        console.log("HERE")
         await SendMailToCostumer(
             email,
             new URL(product.iptv_url),
             language,
             referenceSite
         );
+
         await db.product.update(
             { sold: true, solded_at: new Date() },
             { where: { id: product.id } }
         );
+        let costumer = await db.costumers.findOne({
+            where: { pendding: true, Email: email, referenceSite: referenceSite, bought: false },
+        });
+        ;
+        if (!costumer) {
+            costumer = await CreateCostumer(
+                email,
+                true,
+                false,
+                referenceSite,
+                language
+            );
+        } else {
+            costumer.bought = true;
+            costumer.pendding = false;
+            await costumer.save();
+        }
 
-        let costumer = await CreateCostumer(
-            email,
-            true,
-            false,
-            referenceSite,
-            language
-        );
         await db.purchases.create({
             product_id: product.id,
             Costumer_id: costumer.id,
         });
 
         return res.status(200).json({ msg: "ok" });
+
     } catch (error: any) {
+        console.log(error);
         next(error);
     }
 };

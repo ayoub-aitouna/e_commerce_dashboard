@@ -36,6 +36,7 @@ import { ProductAttributes, IpTvType, productStore } from 'states/products';
 import { MdUpdate } from 'react-icons/md';
 
 import { ParseDate } from 'utils/Dateparser';
+import { IreferenceSite, referenceStore } from 'states/reference';
 
 interface PopUpState {
     isOpen: boolean;
@@ -72,18 +73,23 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
         deleteProduct: state.deleteProduct,
         addProduct: state.addProduct,
     }));
+    const { referencesSites, getReferenceSite } = referenceStore((state: any) => ({
+        referencesSites: state.referencesSites,
+        getReferenceSite: state.getReferenceSite,
+    }));
 
     const cancelRef = useRef<HTMLButtonElement | null>(null);
 
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-    
+
     let defaultData = tableData;
 
     const [data, setData] = React.useState(() => [...defaultData]);
 
     React.useEffect(() => {
         setData(products)
+        getReferenceSite();
     }, [products])
 
     const handlePopUp = (row: ProductAttributes, Type: any = "EDIT") => {
@@ -415,6 +421,28 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                                     </option>
                                                 ))}
 
+                                            </Select>
+
+                                            <FormLabel>Reference Site</FormLabel>
+                                            <Select
+                                                placeholder="Reference Site"
+                                                value={PopUp.row.referenceId}
+                                                onChange={(e) => {
+                                                    setPop(prevState => ({
+                                                        ...prevState,
+                                                        row: {
+                                                            ...prevState.row,
+                                                            referenceId: parseInt(e.target.value as string)
+                                                        }
+                                                    }
+                                                    ))
+                                                }}
+                                            >
+                                                {
+                                                    referencesSites.map((ref: IreferenceSite) => {
+                                                        return <option value={ref.id}>{new URL(ref.site).hostname}</option>
+                                                    })
+                                                }
                                             </Select>
                                         </FormControl>
                                         {/* Add more form fields for other row properties */}

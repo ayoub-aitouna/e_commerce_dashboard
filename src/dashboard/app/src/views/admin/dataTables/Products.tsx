@@ -2,7 +2,7 @@ import { Box, Select, HStack, Flex, Text, IconButton } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { ArrowBackIcon, ArrowForwardIcon } from "@chakra-ui/icons";
 
-import {  IpTvType } from 'states/products';
+import { IpTvType } from 'states/products';
 
 import ProductsTable from 'views/admin/dataTables/components/ProductsTable';
 
@@ -24,11 +24,23 @@ export default function Products() {
         setFilter((v) => ({ ...v, type: Selected } as Filters));
     };
 
+
     const { products, getProducts } = productStore((state) => ({
         products: state.products,
         getProducts: state.getProducts,
     }));
-    useEffect(() => { getProducts(Filter) }, [Filter]);
+
+    const LoadData = async () => {
+        try {
+            await getProducts(Filter);
+        } catch (error: any) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        LoadData();
+    }, [Filter]);
 
     return (
         <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>

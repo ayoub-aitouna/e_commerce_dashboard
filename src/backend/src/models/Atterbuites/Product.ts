@@ -1,3 +1,4 @@
+import { ReferenceAttributes } from "./Reference";
 export enum IpTvType {
     Basic = "Basic",
     Gold = "Gold",
@@ -14,4 +15,7 @@ export interface ProductAttributes {
     solded_at?: Date;
     created_at?: Date;
     updated_at?: Date;
+    referenceId?: number;
+    reference?: ReferenceAttributes;
+
 }

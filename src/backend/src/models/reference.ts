@@ -4,10 +4,10 @@ import { Model } from "sequelize";
 import { ReferenceAttributes } from "./Atterbuites/Reference";
 
 
-module.exports = (sequelize:any, DataTypes:any) => {
+module.exports = (sequelize: any, DataTypes: any) => {
   class Reference
-  extends Model<ReferenceAttributes> implements ReferenceAttributes {
-  
+    extends Model<ReferenceAttributes> implements ReferenceAttributes {
+
     id!: number;
     site!: string;
     dns!: string;
@@ -19,8 +19,9 @@ module.exports = (sequelize:any, DataTypes:any) => {
     updated_at!: Date;
 
 
-    static associate(models:any) {
+    static associate(models: any) {
       // define association here
+      Reference.hasMany(models.product, { as: "products" });
     }
   }
   Reference.init({
@@ -29,39 +30,40 @@ module.exports = (sequelize:any, DataTypes:any) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    site:{
+    site: {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: "https://www.example.com",
     },
-    dns:{
+    dns: {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: "www.example.com",
     },
-    basic_price:{
+    
+    basic_price: {
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0.0,
     },
-    premuim_price:{
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      defaultValue: 0.0,
-
-    },
-    gold_price:{
+    premuim_price: {
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0.0,
 
     },
-    created_at:{
+    gold_price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0.0,
+
+    },
+    created_at: {
       type: DataTypes.DATE,
       defaultValue: new Date(),
       allowNull: false,
     },
-    updated_at:{
+    updated_at: {
       type: DataTypes.DATE,
       defaultValue: new Date(),
       allowNull: false,
