@@ -82,6 +82,7 @@ export const UpdateReference = async (req: Request, res: Response, next: NextFun
         if (!reference)
             throw new BadRequestError({ code: 404, message: 'Not found' });
         await reference.update(req.body);
+        
         // select all products inner join reference 
         const products: ProductAttributes[] = await db.product.findAll({
             include: [{
@@ -91,6 +92,7 @@ export const UpdateReference = async (req: Request, res: Response, next: NextFun
             }]
         });
 
+        console.log("products lenght:",products.length);
         if (products.length !== 0) {
             const updatedProducts = products.map((product) => {
                 let url = new URL(product.iptv_url);

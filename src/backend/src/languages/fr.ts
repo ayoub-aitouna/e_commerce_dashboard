@@ -14,5 +14,7 @@ export default {
     whatsappLabel: "WhatsApp :",
     emailLabel: "Email :",
     signature: "Cordialement,",
-    teamName: "L'équipe Kingiptv"
+    teamName: "L'équipe Kingiptv",
+    UpdatedDns: "Votre DNS a été mis à jour. Veuillez utiliser le lien suivant pour regarder vos chaînes de télévision préférées :",
+    dnsLabel: "DNS :",
 }

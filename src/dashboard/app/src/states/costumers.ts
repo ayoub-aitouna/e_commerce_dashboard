@@ -1,7 +1,7 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
-import { IreferenceSite } from 'states/reference';
+import { Config, Wrapper } from "./Token";
 
 export interface CostumersAttrebues {
     id: Number;
@@ -52,26 +52,30 @@ const GetFilters = (filters: Filters) => {
 export const costumerStore = create<Store>((set: any) => ({
     costumers: [] as CostumersAttrebues[],
     getCostumers: async (filters: Filters) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/costumers/${GetFilters(filters)}`);
-        set({ costumers: data });
-
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/costumers/${GetFilters(filters)}`, Config());
+            set({ costumers: data });
+        });
     },
     downloadCostumers: async (filters: Filters) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/costumers/save/${GetFilters(filters)}`);
-
-        const url = window.URL.createObjectURL(new Blob([data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${new Date().getTime()}-Customers-List.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/costumers/save/${GetFilters(filters)}`, Config());
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${new Date().getTime()}-Customers-List.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     },
     SearchCostumers: async (searchQuery?: String) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/costumers/Search/?searchQuery=${searchQuery}`);
-        set({ costumers: data });
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/costumers/Search/?searchQuery=${searchQuery}`, Config());
+            set({ costumers: data });
+        });
     },
 }));

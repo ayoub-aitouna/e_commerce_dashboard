@@ -300,16 +300,6 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                 </Text>
                 <Flex align="center" gap={5}>
                     <IconButton
-                        aria-label="Update"
-                        icon={<MdUpdate />}
-                        colorScheme="blue"
-                        backgroundColor="blue.500"
-                        color={"white"}
-                        size="sm"
-                        _hover={{ backgroundColor: "gray.900" }} // change this to your preferred color
-                        onClick={(e) => { handlePopUp({} as ProductAttributes, "UPDATE") }}
-                    />
-                    <IconButton
                         aria-label="Edit"
                         icon={<AddIcon />}
                         colorScheme="blue"

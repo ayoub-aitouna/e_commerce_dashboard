@@ -135,9 +135,6 @@ export const generateEmailTemplate = async (
             <p class="indint" >${url.toString()}</p>
             <hr>
         `}
-
-
-
                 <p>${translate("helpContact")} ${phone}</p>
                 <p>${translate("customerServiceInfo")}</p>
                 <p>

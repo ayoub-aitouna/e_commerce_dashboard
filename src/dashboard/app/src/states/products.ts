@@ -1,7 +1,7 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
-import { stat } from 'fs';
+import { Config, Wrapper } from "./Token";
 
 export enum IpTvType {
     Basic = "Basic",
@@ -55,51 +55,64 @@ export const productStore = create<Store>((set) => ({
     error: null,
     Loading: false,
     getProducts: async (filters: Filters) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/product/${GetFilters(filters)}`);
-        set({ products: data });
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/product/${GetFilters(filters)}`, Config());
+            set({ products: data });
+        });
+
     },
     editProduct: async (product) => {
-        await axios.patch(`${BaseUrl}/product/`, product);
-        set((state) => {
-            return {
-                products: state.products.map((p) => {
-                    return p.id === product.id ? { ...p, ...product } : p;
-                }),
-                Loading: false
-            };
+        await Wrapper(async () => {
+            await axios.patch(`${BaseUrl}/product/`, product);
+            set((state) => {
+                return {
+                    products: state.products.map((p) => {
+                        return p.id === product.id ? { ...p, ...product } : p;
+                    }),
+                    Loading: false
+                };
+            });
         });
     },
     updateDns: async (newDns) => {
-        await axios.get(`${BaseUrl}/product/UpdateUrl/?UpdatedDns=${newDns}`);
-        set((state: any) => {
-            return {
-                products: state.products.map((p: any) => {
-                    const url = new URL(p.iptv_url);
-                    const newurl = new URL(newDns);
-                    url.hostname = newurl.hostname;
-                    url.port = newurl.port;
-                    url.protocol = newurl.protocol;
-                    p.iptv_url = url.toString();
-                    return p;
-                })
-            };
+        await Wrapper(async () => {
+            await axios.get(`${BaseUrl}/product/UpdateUrl/?UpdatedDns=${newDns}`
+                , Config());
+            set((state: any) => {
+                return {
+                    products: state.products.map((p: any) => {
+                        const url = new URL(p.iptv_url);
+                        const newurl = new URL(newDns);
+                        url.hostname = newurl.hostname;
+                        url.port = newurl.port;
+                        url.protocol = newurl.protocol;
+                        p.iptv_url = url.toString();
+                        return p;
+                    })
+                };
+            });
         });
     },
     deleteProduct: async (id) => {
-        await axios.delete(`${BaseUrl}/product/?id=${id}`);
-        set((state) => ({
-            products: state.products.filter((product) => product.id !== id),
-        }));
-
+        await Wrapper(async () => {
+            await axios.delete(`${BaseUrl}/product/?id=${id}`, Config());
+            set((state) => ({
+                products: state.products.filter((product) => product.id !== id),
+            }));
+        });
     },
     addProduct: async (product) => {
-        const { data } = await axios.post(`${BaseUrl}/product`, product);
-        set((state) => ({ products: [...state.products, data.result] }));
+        await Wrapper(async () => {
+            const { data } = await axios.post(`${BaseUrl}/product`, product, Config());
+            set((state) => ({ products: [...state.products, data.result] }));
+        });
     },
     searchProduct: async (searchQuery?: String) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/product/Search/?searchQuery=${searchQuery}`);
-        set({ products: data });
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/product/Search/?searchQuery=${searchQuery}`, Config());
+            set({ products: data });
+        });
     },
 }));

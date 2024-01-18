@@ -1,6 +1,7 @@
 import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
+import { Config, Wrapper } from "./Token";
 
 export interface ReferenceAttributes {
     id: number;
@@ -34,43 +35,53 @@ export const referenceStore = create<Store>((set: any) => ({
     references: [] as ReferenceAttributes[],
     referencesSites: [] as IreferenceSite[],
     getReference: async () => {
-        const { data } = await axios.get(
-            `${BaseUrl}/reference/`);
-        set({ references: data });
-
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/reference/`, Config());
+            set({ references: data });
+        });
     },
     editReference: async (reference) => {
-        await axios.put(`${BaseUrl}/reference/${reference.id}`, reference);
-        set((state: Store) => {
-            return {
-                references: state.references.map((p) => {
-                    return p.id === reference.id ? { ...p, ...reference } : p;
-                }),
-                Loading: false
-            };
+        await Wrapper(async () => {
+            await axios.put(`${BaseUrl}/reference/${reference.id}`,
+                reference, Config());
+            set((state: Store) => {
+                return {
+                    references: state.references.map((p) => {
+                        return p.id === reference.id ? { ...p, ...reference } : p;
+                    }),
+                };
+            });
         });
     },
     deleteReference: async (id) => {
-        await axios.delete(`${BaseUrl}/reference/${id}`);
-        set((state: Store) => ({
-            references: state.references.filter((reference) => reference.id !== id),
-        }));
-
+        await Wrapper(async () => {
+            await axios.delete(`${BaseUrl}/reference/${id}`, Config());
+            set((state: Store) => ({
+                references: state.references.filter((reference) => reference.id !== id),
+            }));
+        });
     },
     addReference: async (reference) => {
-        const { data } = await axios.post(`${BaseUrl}/reference`, reference);
-        console.log("data", data);
-        console.log("result", data.result);
-        set((state: Store) => ({ references: [...state.references, data] }));
+        await Wrapper(async () => {
+            const { data } = await axios.post(`${BaseUrl}/reference`, reference, Config());
+            console.log("data", data);
+            console.log("result", data.result);
+            set((state: Store) => ({ references: [...state.references, data] }));
+        });
     },
     searchReference: async (searchQuery?: String) => {
-        const { data } = await axios.get(
-            `${BaseUrl}/reference/Search/?searchQuery=${searchQuery}`);
-        set({ references: data });
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/reference/Search/?searchQuery=${searchQuery}`, Config());
+            set({ references: data });
+        });
     },
     getReferenceSite: async () => {
-        const { data } = await axios.get(
-            `${BaseUrl}/reference/site`);
-        set({ referencesSites: data });
+        await Wrapper(async () => {
+            const { data } = await axios.get(
+                `${BaseUrl}/reference/site`, Config());
+            set({ referencesSites: data });
+        });
     }
 }));

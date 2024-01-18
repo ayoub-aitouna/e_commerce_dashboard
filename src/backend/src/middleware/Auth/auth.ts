@@ -20,7 +20,7 @@ const authenticationMiddleware = async (req: JwtRequest, res: Response, next: Ne
         req.User = jwt.verify(token, accessToken) as AdminAtterbuites;
         next();
     } catch (error) {
-        throw new BadRequestError({ code: 403, message: `Not authorized to access this route ${error}`, logging: true });
+        throw new BadRequestError({ code: 401, message: `Not authorized to access this route ${error}`, logging: true });
     }
 };
 
@@ -32,7 +32,7 @@ const Sign = (User: AdminAtterbuites): JwtToken => {
         throw new BadRequestError({ code: 403, message: `Invalide accessToken`, logging: true });
 
     return {
-        AccessToken: jwt.sign(User, accesstoken_secret, { expiresIn: '10m' }),
+        AccessToken: jwt.sign(User, accesstoken_secret, { expiresIn: '1m' }),
         RefreshToken: jwt.sign(User, refreshtoken_secret, { expiresIn: '7d' }),
     };
 }

@@ -11,7 +11,7 @@ import { errorHandler } from "./middleware/error-handler";
 import notFound from "./middleware/notFound";
 import { Admins, SeedAdminTable } from "./seeders/Admins";
 import cors from 'cors'
-
+import { authenticationMiddleware } from "./middleware/Auth/auth";
 require('express-async-errors');
 
 
@@ -25,10 +25,10 @@ app.use(cors());
 app.use(json());
 
 app.use("/api/v1/auth", AuthRouter);
-app.use("/api/v1/product", ProductRouter);
-app.use("/api/v1/costumers", CostumersRouter);
-app.use("/api/v1/reference", ReferenceRouter);
-app.use("/api/v1/statics", StaticsRouter);
+app.use("/api/v1/product",authenticationMiddleware, ProductRouter);
+app.use("/api/v1/costumers",authenticationMiddleware, CostumersRouter);
+app.use("/api/v1/reference", authenticationMiddleware, ReferenceRouter);
+app.use("/api/v1/statics", authenticationMiddleware,  StaticsRouter);
 
 
 app.use(notFound);

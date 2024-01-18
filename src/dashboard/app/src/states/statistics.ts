@@ -1,8 +1,8 @@
 import create from "zustand";
-import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
-import { BaseUrl, jwt_cockies_name, Jwt_Refresh_Cockies_Name } from "variables/Api";
+import axios from "axios";
+import { BaseUrl } from "variables/Api";
 import { IpTvType } from "./products";
-import Cookies from 'universal-cookie';
+import { Config, Wrapper } from "./Token";
 
 const endpoint = "statics";
 
@@ -42,35 +42,8 @@ type Store = {
   getlatestPurchases: () => Promise<void>;
 };
 
-const Config = async () => {
-  const cookies = new Cookies(null, { path: '/' });
-  const token = cookies.get(jwt_cockies_name);
-
-  if (token) {
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  }
-  return {};
-};
 
 
-const ResetToken = async () => {
-  const cookies = new Cookies(null, { path: '/' });
-  const token = cookies.get(jwt_cockies_name);
-  const refreshToken = cookies.get(Jwt_Refresh_Cockies_Name);
-
-  if (token && refreshToken) {
-    const { data }: { data: { token: string, refreshToken: string } } = await axios.post(
-      `${BaseUrl}/auth/refresh-token`,
-      { refreshToken }
-    );
-    cookies.set(jwt_cockies_name, data.token, { path: '/' });
-    cookies.set(Jwt_Refresh_Cockies_Name, data.refreshToken, { path: '/' });
-  }
-}
 
 export const StatisticsStore = create<Store>((set: any) => ({
   Statics: {} as IStatics,
@@ -81,43 +54,39 @@ export const StatisticsStore = create<Store>((set: any) => ({
   } as IYearState,
   latestPurchases: [] as IPurchase[],
   getStats: async () => {
-    const response = await axios.get(
-      `${BaseUrl}/${endpoint}/`,
-      {
-        headers: {
-          Authorization: `Bearer ${new Cookies(null, { path: '/' }).get(jwt_cockies_name)}`,
-        },
-      }
-    );
-    const { data }: { data: IWeekState } = response;;
-    if (response.status === 403) {
-      console.log("403");
-      await ResetToken();
-      // set.getStats();
-    }
-    set({ Statics: data });
+    await Wrapper(async () => {
+      const { data }: { data: IStatics } = await axios.get(
+        `${BaseUrl}/${endpoint}/`,
+        Config()
+      );
+      set({ Statics: data });
+    });
   },
   getWeekSatate: async () => {
-    const { data }: { data: IWeekState } = await axios.get(
-      `${BaseUrl}/${endpoint}/week`,
-      {
-        headers: {
-          Authorization: `Bearer ${new Cookies(null, { path: '/' }).get(jwt_cockies_name)}`,
-        },
-      }
-    );
-    set({ WeekState: { daysOfWeek: data.daysOfWeek, today: data.today } });
+    await Wrapper(async () => {
+      const { data }: { data: IWeekState } = await axios.get(
+        `${BaseUrl}/${endpoint}/week`,
+        Config()
+      );
+      set({ WeekState: { daysOfWeek: data.daysOfWeek, today: data.today } });
+    });
   },
   getYearSatate: async () => {
-    const { data }: { data: IWeekState } = await axios.get(
-      `${BaseUrl}/${endpoint}/year`
-    );
-    set({ YearState: data });
+    await Wrapper(async () => {
+      const { data }: { data: IWeekState } = await axios.get(
+        `${BaseUrl}/${endpoint}/year`, Config()
+      );
+      set({ YearState: data });
+    });
+
   },
   getlatestPurchases: async () => {
-    const { data }: { data: IWeekState } = await axios.get(
-      `${BaseUrl}/${endpoint}/latest-purchases`
-    );
-    set({ latestPurchases: data });
+    await Wrapper(async () => {
+      console.log("getlatestPurchases", Config());
+      const { data }: { data: IWeekState } = await axios.get(
+        `${BaseUrl}/${endpoint}/latest-purchases`, Config()
+      );
+      set({ latestPurchases: data });
+    });
   },
 }));

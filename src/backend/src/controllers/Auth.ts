@@ -28,18 +28,28 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
 }
 
-const refreshToken = async (req: Request, res: Response) => {
+const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer "))
-        throw new BadRequestError({ code: 403, message: "No token provided", logging: true });
-    const token = authHeader.split(" ")[1];
+
     try {
+        if (!authHeader || !authHeader.startsWith("Bearer "))
+            throw new BadRequestError({ code: 403, message: "No token provided", logging: true });
+        const token = authHeader.split(" ")[1];
+
         const refresh_token_secret: string | undefined = process.env.REFRESH_TOKEN_SECRET;
         if (!refresh_token_secret)
             throw new BadRequestError({ code: 403, message: "Invalide refresh_token_secret", logging: true });
-        res.json(Sign(jwt.verify(token, refresh_token_secret) as AdminAtterbuites));
+        console.log(authHeader, token);
+        const admin  = jwt.verify(token, refresh_token_secret) as any;
+        
+        delete admin.iat;
+        delete admin.exp;
+
+        console.log(admin);
+        res.json(Sign(admin as AdminAtterbuites));
     } catch (error) {
-        throw new BadRequestError({ code: 403, message: `Not authorized to access this route ${error}`, logging: true });
+        console.log(error)
+        next(error);
     }
 }
 
