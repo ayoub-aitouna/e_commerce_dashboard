@@ -64,7 +64,7 @@ export const productStore = create<Store>((set) => ({
     },
     editProduct: async (product) => {
         await Wrapper(async () => {
-            await axios.patch(`${BaseUrl}/product/`, product);
+            await axios.patch(`${BaseUrl}/product/`, product, Config());
             set((state) => {
                 return {
                     products: state.products.map((p) => {

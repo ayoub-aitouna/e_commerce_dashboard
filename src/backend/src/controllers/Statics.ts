@@ -110,7 +110,7 @@ export const GetStatics = async (
       TotalAvailableProducts: count,
     });
   } catch (error: any) {
-    next(error);
+    res.status(500).json(error);
   }
 };
 
@@ -161,7 +161,7 @@ export const GetWeekStatics = async (
     return res.status(200).json({ daysOfWeek, today });
   } catch (error: any) {
     console.error(error);
-    next(error);
+    res.status(500).json(error);
   }
 };
 
@@ -209,7 +209,7 @@ export const GetYearStatics = async (
     return res.status(200).json({ monthsOfYear, currentMonthSells });
   } catch (error: any) {
     console.error(error);
-    next(error);
+    res.status(500).json(error);
   }
 };
 
@@ -243,6 +243,6 @@ export const GetLatestPurchases = async (
     return res.status(200).json(result);
   } catch (error: any) {
     console.error(error);
-    next(error);
+    res.status(500).json(error);
   }
 };

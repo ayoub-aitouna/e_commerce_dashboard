@@ -80,7 +80,7 @@ export const ProductList = async (
         });
         return res.status(200).json(result);
     } catch (error: any) {
-        return next(error);
+        return res.status(500).json(error);
     }
 };
 
@@ -141,7 +141,7 @@ export const UpdateUrl = async (
 
         return res.status(200).send({ msg: "ok" });
     } catch (error: any) {
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -218,7 +218,7 @@ export const AddNewProduct = async (
         });
     } catch (error: any) {
         console.log(error);
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -248,7 +248,7 @@ export const EditOnAProduct = async (
         await product.save();
         return res.status(200).json({ msg: "ok" });
     } catch (error: any) {
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -309,7 +309,7 @@ export const SellProduct = async (
                 logging: true,
             });
 
-        const { count } = await db.admin.findAndCountAll({
+        const { count } = await db.admins.findAndCountAll({
             where: { api_token: api_token },
         });
 
@@ -373,7 +373,7 @@ export const SellProduct = async (
 
     } catch (error: any) {
         console.log(error);
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -389,7 +389,7 @@ export const DeleteProduct = async (
         if (!result) return res.status(404).json({ msg: "Product not found" });
         return res.sendStatus(204);
     } catch (error: any) {
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -409,6 +409,6 @@ export const SearchProduct = async (
         });
         return res.status(200).json(products);
     } catch (error: any) {
-        next(error);
+        res.status(500).json(error);
     }
 };

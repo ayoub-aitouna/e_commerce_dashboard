@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node .dist/index.js",
+    "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
   "keywords": [],
@@ -37,6 +37,7 @@
     "http-status-codes": "^2.3.0",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.7.1",
     "nodemailer": "^6.9.8",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",

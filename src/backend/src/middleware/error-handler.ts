@@ -14,7 +14,7 @@ const errorHandler = (err: Error, req: Request, res: Response, next: NextFunctio
             }, null, 2));
         }
 
-        return res.status(statusCode).send(errors);
+        return res.status(500).send(err);
     }
 
     // Unhandled errors

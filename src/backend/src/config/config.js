@@ -1,15 +1,15 @@
 require('dotenv').config();
-console.log(process.env.DB_NAME);
+console.log(process.env.MYSQL_DATABASE);
 
 module.exports =
 {
   "development": {
-    "username": process.env.DB_USER,
-    "password": process.env.DB_PASS,
-    "database": process.env.DB_NAME,
-    "host": "postgres",  // Use the service name from Docker Compose
-    "port": 5432,        // Port for PostgreSQL
-    "dialect": "postgres",
+    "username": process.env.MYSQL_USER,
+    "password": process.env.MYSQL_ROOT_PASSWORD,
+    "database": process.env.MYSQL_DATABASE,
+    "host": "mariadb",  // Use the service name from Docker Compose
+    "port": 3306,     // Default port for MySQL
+    "dialect": "mysql",
     "logging": false,
   },
   "test": {

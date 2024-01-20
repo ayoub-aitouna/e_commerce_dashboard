@@ -13,7 +13,19 @@ services:
     volumes:
       - backend_volume:/usr/src/app
     depends_on:
-      - postgres
+      - mariadb
+  mariadb:
+    container_name: mariadb
+    build:
+      context: ./mariadb/.
+    networks:
+      - mynetwork
+    expose:
+      - 3306
+    volumes:
+      - "DB:/var/lib/mysql"
+    env_file:
+      - ./backend/.env
 
   dashboard:
     container_name: dashboard
@@ -28,36 +40,26 @@ services:
     depends_on:
       - backend
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    networks:
-      - mynetwork
-    expose:
-      - 5432
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - backend/.env
 volumes:
   backend_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: '/home/aaitouna/e_commerce_dashboard/src/backend/'
+      device: './backend/'
 
   dashboard_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: '/home/aaitouna/e_commerce_dashboard/src/dashboard/app/'
-  postgres_data:
+      device: './dashboard/app/'
+  DB:
 
 
 networks:
   mynetwork:
     driver: bridge
+
 # /home/aaitouna/e_commerce_dashboard/src
 # /home/aaitouna/e_commerce_dashboard/src

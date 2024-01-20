@@ -22,9 +22,9 @@ export const Admins = async (): Promise<AdminAtterbuites[]> => {
 export const SeedAdminTable = async (db: any, Admins: AdminAtterbuites[]) => {
     try {
       Admins.map(async (admin) => {
-        const existingAdmin = await db.admin.findOne({ where: { email: admin.email } });
+        const existingAdmin = await db.admins.findOne({ where: { email: admin.email } });
         if (!existingAdmin) {
-          await db.admin.create(admin);
+          await db.admins.create(admin);
           console.log(`Admin '${admin.email}' created successfully.`);
         }
       });

@@ -13,7 +13,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         const { email, password } = req.body;
         if (!email || !password)
             throw new BadRequestError({ code: 403, message: "email & password are required!", logging: true });
-        const adminres = await db.admin.findOne({ where: { email: email } });
+        const adminres = await db.admins.findOne({ where: { email: email } });
         if (!adminres)
             throw new BadRequestError({ code: 403, message: "email is incorrect!", logging: true })
         const admin: AdminAtterbuites | undefined = adminres.dataValues;
@@ -23,7 +23,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             throw new BadRequestError({ code: 403, message: "password is incorrect!", logging: true });
         return res.json(Sign(admin));
     } catch (err) {
-        next(err);
+        res.status(500).json(err);;
     }
 
 }
@@ -49,7 +49,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
         res.json(Sign(admin as AdminAtterbuites));
     } catch (error) {
         console.log(error)
-        next(error);
+        res.status(500).json(error);
     }
 }
 

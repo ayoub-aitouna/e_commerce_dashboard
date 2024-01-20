@@ -72,7 +72,7 @@ export const ListCostumers = async (req: Request, res: Response, next: NextFunct
             costumers.slice(offset, offset + limit) : costumers);
     } catch (error) {
         console.log(error);
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -117,7 +117,7 @@ export const SaveCostumers = async (req: Request, res: Response, next: NextFunct
         log(`File ${filename} sent`);
         return;
     } catch (error) {
-        next(error);
+        res.status(500).json(error);
     }
 };
 
@@ -137,7 +137,7 @@ export const addCostumer = async (req: Request, res: Response, next: NextFunctio
         });
         res.status(200).json(costumer);
     } catch (error) {
-        next(error);
+        res.status(500).json(error);
     }
 }
 
@@ -156,6 +156,6 @@ export const SearchCostumer = async (req: Request, res: Response, next: NextFunc
         });
         res.status(200).json(costumers);
     } catch (error) {
-        next(error);
+        res.status(500).json(error);
     }
 }
