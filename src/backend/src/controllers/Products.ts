@@ -51,7 +51,7 @@ function generateWhereClause(sold: any, type: any) {
     let where = {} as any;
 
     if (sold !== undefined && sold !== null) {
-        where.sold = sold;
+        where.sold = sold === 'true' ? 1 : 0;
     }
 
     if (Object.values(IpTvType).includes(type)) {
@@ -80,7 +80,7 @@ export const ProductList = async (
         });
         return res.status(200).json(result);
     } catch (error: any) {
-        return res.status(500).json(error);
+        return next(error);
     }
 };
 
@@ -141,7 +141,7 @@ export const UpdateUrl = async (
 
         return res.status(200).send({ msg: "ok" });
     } catch (error: any) {
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -218,7 +218,7 @@ export const AddNewProduct = async (
         });
     } catch (error: any) {
         console.log(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -248,7 +248,7 @@ export const EditOnAProduct = async (
         await product.save();
         return res.status(200).json({ msg: "ok" });
     } catch (error: any) {
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -309,7 +309,7 @@ export const SellProduct = async (
                 logging: true,
             });
 
-        const { count } = await db.admins.findAndCountAll({
+        const { count } = await db.admin.findAndCountAll({
             where: { api_token: api_token },
         });
 
@@ -373,7 +373,7 @@ export const SellProduct = async (
 
     } catch (error: any) {
         console.log(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -389,7 +389,7 @@ export const DeleteProduct = async (
         if (!result) return res.status(404).json({ msg: "Product not found" });
         return res.sendStatus(204);
     } catch (error: any) {
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -403,12 +403,12 @@ export const SearchProduct = async (
         const products = await db.product.findAll({
             where: searchQuery
                 ? {
-                    [Op.or]: [{ iptv_url: { [Op.iLike]: `%${searchQuery}%` } }],
+                    [Op.or]: [{ iptv_url: { [Op.like]: `%${searchQuery}%` } }],
                 }
                 : {},
         });
         return res.status(200).json(products);
     } catch (error: any) {
-        res.status(500).json(error);
+        next(error);
     }
 };

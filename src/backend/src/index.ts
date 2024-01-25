@@ -25,11 +25,14 @@ app.use(cors());
 app.use(json());
 
 app.use("/api/v1/auth", AuthRouter);
-app.use("/api/v1/product",authenticationMiddleware, ProductRouter);
-app.use("/api/v1/costumers",authenticationMiddleware, CostumersRouter);
-app.use("/api/v1/reference", authenticationMiddleware, ReferenceRouter);
-app.use("/api/v1/statics", authenticationMiddleware,  StaticsRouter);
+app.use("/api/v1/product", ProductRouter);
+app.use("/api/v1/costumers", CostumersRouter);
+app.use("/api/v1/reference", ReferenceRouter);
+app.use("/api/v1/statics",  StaticsRouter);
 
+app.get("/", (req: Request, res: Response) => {
+  res.send(db);
+});
 
 app.use(notFound);
 app.use(errorHandler);
@@ -38,7 +41,28 @@ const RESET = false;
 db.sequelize.sync({ force: RESET }).then(async () => {
   const adminlist = await Admins();
   SeedAdminTable(db, adminlist);
+
+});
+
+async function setupDatabase() {
+  // Replace this with your actual database setup code
+  const RESET = process.env.RESET === 'true';
+  await db.sequelize.sync({ force: RESET });
+}
+
+async function seedDatabase() {
+  const adminlist = await Admins();
+  await SeedAdminTable(db, adminlist);
+}
+
+// Use an IIFE (Immediately Invoked Function Expression) to use async/await at the top level
+(async () => {
+  await setupDatabase();
+  await seedDatabase();
+
+
+  
   app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
   });
-});
+})();

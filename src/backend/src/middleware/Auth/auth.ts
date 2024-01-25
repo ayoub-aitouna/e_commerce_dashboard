@@ -18,7 +18,7 @@ const authenticationMiddleware = async (req: JwtRequest, res: Response, next: Ne
         if (!accessToken)
             throw new BadRequestError({ code: 403, message: "Invalide accessToken", logging: true });
         req.User = jwt.verify(token, accessToken) as AdminAtterbuites;
-        res.status(500).json();
+        next();
     } catch (error) {
         throw new BadRequestError({ code: 401, message: `Not authorized to access this route ${error}`, logging: true });
     }

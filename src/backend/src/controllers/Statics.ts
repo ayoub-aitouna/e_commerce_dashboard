@@ -2,70 +2,51 @@ import { Request, Response, NextFunction } from "express";
 import db from "../models";
 import { Op } from "sequelize";
 import { ProductAttributes, IpTvType } from "../models/Atterbuites/Product";
+import { PurchasesAttributes } from "../models/Atterbuites/Purchases";
+interface DateStatic {
+  Total: number;
+  Count: number;
+}
 
 const CalculatByQuery = async (query: any) => {
   let Total = 0;
-  const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({
-      where: query,
+  const lastMonthPurchases: PurchasesAttributes[] | any =
+    await db.purchases.findAll({
       include: [
         {
-          model: db.reference,
+          model: db.product,
           required: true,
+          where: query,
+          include: [
+            {
+              model: db.reference,
+              required: true,
+            }
+          ]
         }
       ]
     });
 
-  for (const product of lastMonthProductsInserts) {
-    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
-    switch (product.type) {
+  for (const purchase of lastMonthPurchases) {
+    console.log(purchase.product.reference?.basic_price, purchase.product.reference?.premuim_price, purchase.product.reference?.gold_price);
+    switch (purchase.product.type) {
       case IpTvType.Basic:
-        Total += product.reference?.basic_price || 0;
+        Total += purchase.product.reference?.basic_price || 0;
         break;
       case IpTvType.Premium:
-        Total += product.reference?.premuim_price || 0;
+        Total += purchase.product.reference?.premuim_price || 0;
         break;
       case IpTvType.Gold:
-        Total += product.reference?.gold_price || 0;
+        Total += purchase.product.reference?.gold_price || 0;
         break;
     }
   }
-  return Total;
+  return {
+    Total: Total,
+    Count: lastMonthPurchases.length
+  } as DateStatic;
 };
 
-const CalculatByQueryAvg = async (query: any) => {
-  let Total = 0;
-
-
-  const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({
-      where: query,
-      include: [
-        {
-          model: db.reference,
-          required: true,
-        }
-      ]
-    });
-  if (lastMonthProductsInserts.length === 0)
-    return (0);
-  for (const product of lastMonthProductsInserts) {
-    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
-    switch (product.type) {
-      case IpTvType.Basic:
-        Total += product.reference?.basic_price || 0;
-        break;
-      case IpTvType.Premium:
-        Total += product.reference?.premuim_price || 0;
-        break;
-      case IpTvType.Gold:
-        Total += product.reference?.gold_price || 0;
-        break;
-    }
-  }
-  return (Total / lastMonthProductsInserts.length).toFixed(1);
-
-};
 
 const GetSDate = (NumberOfDays: number, NumberOMonths: number) => {
   const date = new Date();
@@ -80,20 +61,15 @@ export const GetStatics = async (
   next: NextFunction
 ) => {
   try {
-    let todays = await CalculatByQuery({
+    const TodaysStatics = await CalculatByQuery({
       solded_at: {
-        [Op.gte]: GetSDate(1, 0),
-      },
-    });
-    let todaysAvg = await CalculatByQueryAvg({
-      solded_at: {
-        [Op.gte]: GetSDate(1, 0),
+        [Op.gt]: new Date(new Date().setHours(0, 0, 0, 0)),
       },
     });
 
     let thisMonth = await CalculatByQuery({
       solded_at: {
-        [Op.gte]: GetSDate(0, 1),
+        [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       },
     });
 
@@ -104,13 +80,14 @@ export const GetStatics = async (
     });
 
     return res.status(200).json({
-      todaysTotalRevenue: todays,
-      thisMonthTotalRevenue: thisMonth,
-      AverageOrderRevenueToday: todaysAvg,
+      todaysTotalRevenue: TodaysStatics.Total,
+      thisMonthTotalRevenue: thisMonth.Total,
+      AverageOrderRevenueToday: TodaysStatics.Count !== 0 ? (TodaysStatics.Total / TodaysStatics.Count).toFixed(2) : 0,
       TotalAvailableProducts: count,
     });
   } catch (error: any) {
-    res.status(500).json(error);
+    console.log(error);
+    next(error);
   }
 };
 
@@ -161,7 +138,7 @@ export const GetWeekStatics = async (
     return res.status(200).json({ daysOfWeek, today });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json(error);
+    next(error);
   }
 };
 
@@ -209,7 +186,7 @@ export const GetYearStatics = async (
     return res.status(200).json({ monthsOfYear, currentMonthSells });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json(error);
+    next(error);
   }
 };
 
@@ -243,6 +220,6 @@ export const GetLatestPurchases = async (
     return res.status(200).json(result);
   } catch (error: any) {
     console.error(error);
-    res.status(500).json(error);
+    next(error);
   }
 };

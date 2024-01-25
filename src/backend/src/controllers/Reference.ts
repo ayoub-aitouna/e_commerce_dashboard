@@ -50,7 +50,7 @@ export const GetReference = async (req: Request, res: Response, next: NextFuncti
         res.status(200).json(ref);
     } catch (error) {
         console.error(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -66,7 +66,7 @@ export const PostReference = async (req: Request, res: Response, next: NextFunct
         res.status(201).json(reference);
     } catch (err) {
         console.error(err);
-        res.status(500).json(err);;
+        next(err);
     }
 };
 
@@ -136,7 +136,7 @@ export const UpdateReference = async (req: Request, res: Response, next: NextFun
 
     } catch (err) {
         console.error(err);
-        res.status(500).json(err);;
+        next(err);
     }
 };
 
@@ -150,7 +150,7 @@ export const deleteReferece = async (req: Request, res: Response, next: NextFunc
         res.json({ message: 'Deleted successfully' });
     } catch (err) {
         console.error(err);
-        res.status(500).json(err);;
+        next(err);
     }
 };
 
@@ -168,7 +168,7 @@ export const SearchReference = async (req: Request, res: Response, next: NextFun
         res.status(200).json(reference);
     } catch (error) {
         console.error(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -181,7 +181,7 @@ export const GetReferenceDns = async (req: Request, res: Response, next: NextFun
         res.status(200).json(ref);
     } catch (error) {
         console.error(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -194,6 +194,6 @@ export const GetReferenceSite = async (req: Request, res: Response, next: NextFu
         res.status(200).json(ref);
     } catch (error) {
         console.error(error);
-        res.status(500).json(error);
+        next(error);
     }
 };

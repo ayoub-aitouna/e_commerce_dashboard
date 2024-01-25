@@ -14,9 +14,10 @@ function generateWhereClause(bought: any, pendding: any) {
     let where = {} as any;
 
     if (bought !== undefined && bought !== null)
-        where.bought = bought;
+        where.bought = bought === 'true' ? 1 : 0;
+
     if (pendding !== undefined && pendding !== null)
-        where.pendding = pendding;
+        where.pendding = pendding === 'true' ? 1 : 0;
 
     console.log("Costumers List Filters : ", where);
     return where;
@@ -72,7 +73,7 @@ export const ListCostumers = async (req: Request, res: Response, next: NextFunct
             costumers.slice(offset, offset + limit) : costumers);
     } catch (error) {
         console.log(error);
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -117,7 +118,7 @@ export const SaveCostumers = async (req: Request, res: Response, next: NextFunct
         log(`File ${filename} sent`);
         return;
     } catch (error) {
-        res.status(500).json(error);
+        next(error);
     }
 };
 
@@ -137,7 +138,7 @@ export const addCostumer = async (req: Request, res: Response, next: NextFunctio
         });
         res.status(200).json(costumer);
     } catch (error) {
-        res.status(500).json(error);
+        next(error);
     }
 }
 
@@ -156,6 +157,6 @@ export const SearchCostumer = async (req: Request, res: Response, next: NextFunc
         });
         res.status(200).json(costumers);
     } catch (error) {
-        res.status(500).json(error);
+        next(error);
     }
 }
