@@ -39,20 +39,15 @@ const CalculatByQuery = async (query: any) => {
       case IpTvType.Gold:
         Total += purchase.product.reference?.gold_price || 0;
         break;
+        case IpTvType.Elit:
+          Total += purchase.product.reference?.elit_price || 0;
+          break;
     }
   }
   return {
     Total: Total,
     Count: lastMonthPurchases.length
   } as DateStatic;
-};
-
-
-const GetSDate = (NumberOfDays: number, NumberOMonths: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() - NumberOfDays);
-  date.setMonth(date.getMonth() - NumberOMonths);
-  return date;
 };
 
 export const GetStatics = async (
@@ -131,7 +126,7 @@ export const GetWeekStatics = async (
     });
     const daysOfWeek = [0, 0, 0, 0, 0, 0, 0];
     counts.forEach((count: any) => {
-      daysOfWeek[count.dayOfWeek as number] =
+      daysOfWeek[count.dayOfWeek as number - 1] =
         parseInt(count.count as string) || 0;
     });
     const today = daysOfWeek[new Date().getDay()];

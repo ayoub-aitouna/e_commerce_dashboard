@@ -3,6 +3,8 @@ export enum IpTvType {
     Basic = "Basic",
     Gold = "Gold",
     Premium = "Premium",
+    Elit = "Elit",
+
 }
 
 export interface ProductAttributes {

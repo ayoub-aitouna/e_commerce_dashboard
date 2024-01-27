@@ -27,18 +27,18 @@ services:
     env_file:
       - ./backend/.env
 
-  # dashboard:
-    # container_name: dashboard
-    # build:
-    #   context: ./dashboard/.
-    # networks:
-    #   - mynetwork
-    # ports:
-    #   - "3000:3000"
-    # volumes:
-    #   - dashboard_volume:/usr/src/app
-    # depends_on:
-    #   - backend
+  dashboard:
+    container_name: dashboard
+    build:
+      context: ./dashboard/.
+    networks:
+      - mynetwork
+    ports:
+      - "3000:3000"
+    volumes:
+      - dashboard_volume:/usr/src/app
+    depends_on:
+      - backend
 
 volumes:
   backend_volume:
@@ -46,14 +46,14 @@ volumes:
     driver_opts:
       type: "none"
       o: 'bind'
-      device: '/home/aaitouna/e_commerce_dashboard/src/backend/'
+      device: './src/backend/'
 
   dashboard_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: '/home/aaitouna/e_commerce_dashboard/src/dashboard/app/'
+      device: './src/dashboard/app/'
   DB:
 
 

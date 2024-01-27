@@ -14,6 +14,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     basic_price!: number;
     premuim_price!: number;
     gold_price!: number;
+    elit_price!: number;
     language!: string;
     created_at!: Date;
     updated_at!: Date;
@@ -51,6 +52,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
       allowNull: false,
       defaultValue: 0.0,
 
+    },
+    elit_price:{
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0.0,
     },
     gold_price: {
       type: DataTypes.FLOAT,
