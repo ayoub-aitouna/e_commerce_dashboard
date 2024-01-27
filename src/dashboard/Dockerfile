@@ -12,5 +12,4 @@ RUN apt-get -y install nodejs
 
 WORKDIR  /usr/src/app
 
-
 ENTRYPOINT ["sh", "start.sh" ]

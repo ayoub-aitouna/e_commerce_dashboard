@@ -1,8 +1,14 @@
-echo "Running npm install";
-npm install;
-echo "Running npm run start";
-npm run build;
-echo "BUILT SUCCESSFULLY"
-eixt 0
-npm start --host 0.0.0.0
+# echo "Insatlling Dependecies"
+# npm install;
+
+# echo "Building Application..."
+# npm run build;
+
+# chmod 777 build -R;
+
+# rm build.zip build.tar.gz
+# tar -czvf build.tar.gz build/
+
+echo "Starting Application..."
+npm start;
 

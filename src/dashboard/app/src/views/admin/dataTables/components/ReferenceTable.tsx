@@ -65,7 +65,10 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
         row: {
             site: "",
             dns: "",
-            basic_price: 0.0, premuim_price: 0.0, gold_price: 0.0
+            basic_price: 0.0,
+            premuim_price: 0.0,
+            gold_price: 0.0,
+            elit_price: 0.0
         } as ReferenceAttributes,
         Type: "INSERT",
         Loading: false,
@@ -90,7 +93,8 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
     const [data, setData] = React.useState(() => [...defaultData]);
 
     React.useEffect(() => {
-        setData(references)
+        setData(references);
+        console.log("references", references);
     }, [references])
 
     const handlePopUp = (row: ReferenceAttributes, Type: any = "EDIT") => {
@@ -224,6 +228,23 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
             cell: (info) => (
                 <Text color={textColor} fontSize='sm' fontWeight='700'>
                     {info.getValue()}
+                </Text>
+            )
+        }),
+        columnHelper.accessor('elit_price', {
+            id: 'elit_price',
+            header: () => (
+                <Text
+                    justifyContent='space-between'
+                    align='center'
+                    fontSize={{ sm: '10px', lg: '12px' }}
+                    color='gray.400'>
+                    Elit Price
+                </Text>
+            ),
+            cell: (info) => (
+                <Text color={textColor} fontSize='sm' fontWeight='700'>
+                    {info.getValue() || 0.00}
                 </Text>
             )
         }),
@@ -412,7 +433,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                                 }))
                                             }} />
                                             <FormLabel>Basic Price</FormLabel>
-                                            <NumberInput step={1} defaultValue={15} min={0} max={9999}
+                                            <NumberInput step={1} defaultValue={PopUp.row.basic_price || 15} min={0} max={9999}
                                                 onChange={(e) => {
                                                     setPop(prevState => ({
                                                         ...prevState,
@@ -432,7 +453,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                             </NumberInput>
 
                                             <FormLabel>Gold Price</FormLabel>
-                                            <NumberInput step={1} defaultValue={15} min={0} max={9999}
+                                            <NumberInput step={1} defaultValue={PopUp.row.gold_price || 15} min={0} max={9999}
                                                 onChange={(e) => {
                                                     setPop(prevState => ({
                                                         ...prevState,
@@ -453,7 +474,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
 
                                             <FormLabel>Premuim Price</FormLabel>
 
-                                            <NumberInput step={1} defaultValue={15} min={0} max={9999}
+                                            <NumberInput step={1} defaultValue={PopUp.row.premuim_price || 15} min={0} max={9999}
                                                 onChange={(e) => {
                                                     setPop(prevState => ({
                                                         ...prevState,
@@ -471,6 +492,29 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                                     <NumberDecrementStepper />
                                                 </NumberInputStepper>
                                             </NumberInput>
+
+                                            <FormLabel>Elit Price</FormLabel>
+
+                                            <NumberInput step={1} defaultValue={PopUp.row.elit_price || 15} min={0} max={9999}
+                                                onChange={(e) => {
+                                                    setPop(prevState => ({
+                                                        ...prevState,
+                                                        row: {
+                                                            ...prevState.row,
+                                                            elit_price: parseFloat(e)
+
+                                                        }
+                                                    }))
+
+                                                }}>
+                                                <NumberInputField />
+                                                <NumberInputStepper>
+                                                    <NumberIncrementStepper />
+                                                    <NumberDecrementStepper />
+                                                </NumberInputStepper>
+                                            </NumberInput>
+
+
                                         </FormControl>
 
                                     </AlertDialogBody>

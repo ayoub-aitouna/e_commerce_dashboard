@@ -10,6 +10,7 @@ export interface ReferenceAttributes {
     basic_price: number;
     premuim_price: number;
     gold_price: number;
+    elit_price: number;
     created_at: Date;
     updated_at: Date;
 }
@@ -54,6 +55,7 @@ export const referenceStore = create<Store>((set: any) => ({
             });
         });
     },
+    
     deleteReference: async (id) => {
         await Wrapper(async () => {
             await axios.delete(`${BaseUrl}/reference/${id}`, Config());
