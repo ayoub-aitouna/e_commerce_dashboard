@@ -1,14 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import db from "../models";
 import { Op } from "sequelize";
-import { ProductAttributes, IpTvType } from "../models/Atterbuites/Product";
+import { IpTvType } from "../models/Atterbuites/Product";
 import { PurchasesAttributes } from "../models/Atterbuites/Purchases";
 interface DateStatic {
   Total: number;
   Count: number;
 }
 
-const CalculatByQuery = async (query: any) => {
+const CalculatByQuery = async (query: any, referenceId: number | undefined = undefined) => {
   let Total = 0;
   const lastMonthPurchases: PurchasesAttributes[] | any =
     await db.purchases.findAll({
@@ -21,6 +21,7 @@ const CalculatByQuery = async (query: any) => {
             {
               model: db.reference,
               required: true,
+              where: referenceId ? { id: referenceId } : {},
             }
           ]
         }
@@ -39,9 +40,9 @@ const CalculatByQuery = async (query: any) => {
       case IpTvType.Gold:
         Total += purchase.product.reference?.gold_price || 0;
         break;
-        case IpTvType.Elit:
-          Total += purchase.product.reference?.elit_price || 0;
-          break;
+      case IpTvType.Elit:
+        Total += purchase.product.reference?.elit_price || 0;
+        break;
     }
   }
   return {
@@ -55,23 +56,32 @@ export const GetStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
+
   try {
     const TodaysStatics = await CalculatByQuery({
       solded_at: {
         [Op.gt]: new Date(new Date().setHours(0, 0, 0, 0)),
       },
-    });
+    }, referenceId ? parseInt(referenceId as string) : undefined);
 
     let thisMonth = await CalculatByQuery({
       solded_at: {
         [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       },
-    });
+    }, referenceId ? parseInt(referenceId as string) : undefined);
 
     let count = await db.product.count({
       where: {
         sold: false,
       },
+      include: [
+        {
+          model: db.reference,
+          required: true,
+          where: referenceId ? { id: referenceId } : {},
+        }
+      ]
     });
 
     return res.status(200).json({
@@ -91,6 +101,7 @@ export const GetWeekStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
   // Get the date one week ago
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -104,7 +115,7 @@ export const GetWeekStatics = async (
   } else if (db.sequelize.getDialect() === "mysql") {
     dayOfWeekFunction = db.sequelize.fn(
       "DAYOFWEEK",
-      db.sequelize.col("created_at")
+      db.sequelize.col("`purchases`.`created_at`")
     );
   } else {
     throw new Error("Unsupported database dialect");
@@ -123,6 +134,14 @@ export const GetWeekStatics = async (
       },
       group: [dayOfWeekFunction],
       raw: true,
+      include: [
+        {
+          model: db.product,
+          required: true,
+          attributes: ["referenceId"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+        }
+      ]
     });
     const daysOfWeek = [0, 0, 0, 0, 0, 0, 0];
     counts.forEach((count: any) => {
@@ -142,6 +161,8 @@ export const GetYearStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+
+  const referenceId = req.query.referenceId;
   // Get the date one year ago
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -150,10 +171,10 @@ export const GetYearStatics = async (
   if (db.sequelize.getDialect() === "postgres") {
     monthFunction = db.sequelize.fn(
       "EXTRACT",
-      db.sequelize.literal("MONTH FROM created_at")
+      db.sequelize.literal("MONTH FROM `purchases`.`created_at`")
     );
   } else if (db.sequelize.getDialect() === "mysql") {
-    monthFunction = db.sequelize.fn("MONTH", db.sequelize.col("created_at"));
+    monthFunction = db.sequelize.fn("MONTH", db.sequelize.col("`purchases`.`created_at`"));
   } else {
     throw new Error("Unsupported database dialect");
   }
@@ -171,6 +192,14 @@ export const GetYearStatics = async (
       },
       group: [monthFunction],
       raw: true,
+      include: [
+        {
+          model: db.product,
+          required: true,
+          attributes: ["referenceId"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+        }
+      ]
     });
     const monthsOfYear = Array(12).fill(0);
     counts.forEach((count: any) => {
@@ -190,6 +219,7 @@ export const GetLatestPurchases = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
   try {
     const purchases = await db.purchases.findAll({
       include: [
@@ -199,7 +229,8 @@ export const GetLatestPurchases = async (
         },
         {
           model: db.product,
-          attributes: ["type"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+          attributes: ["type", "referenceId"],
         },
       ],
       order: [["created_at", "DESC"]],

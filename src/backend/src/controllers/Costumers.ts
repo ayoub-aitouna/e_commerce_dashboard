@@ -7,10 +7,9 @@ import db from '../models';
 import fs from 'fs';
 import { BadRequestError } from '../errors';
 import { Op } from 'sequelize';
-import { off } from 'process';
 
 
-function generateWhereClause(bought: any, pendding: any) {
+function generateWhereClause(bought: any, pendding: any, referenceSite: any) {
     let where = {} as any;
 
     if (bought !== undefined && bought !== null)
@@ -18,59 +17,30 @@ function generateWhereClause(bought: any, pendding: any) {
 
     if (pendding !== undefined && pendding !== null)
         where.pendding = pendding === 'true' ? 1 : 0;
+    if (referenceSite !== undefined && referenceSite !== null && referenceSite !== '')
+        where.referenceSite = referenceSite;
 
     console.log("Costumers List Filters : ", where);
     return where;
 }
 
 //referenceSite
-const InnerJoin = (referenceSite: number | undefined, limit: number, offset: number) => {
-    if (referenceSite === undefined)
-        return [];
-    log("referenceSite : ", referenceSite);
-    return [
-        {
-            model: db.purchases,
-            required: true,
-            include: [
-                {
-                    model: db.product,
-                    required: true,
-                    include: [
-                        {
-                            model: db.reference,
-                            required: true,
-                            where: { id: referenceSite }
-                        }
-                    ]
-                }
-            ]
-
-        }
-    ]
-}
 export const ListCostumers = async (req: Request, res: Response, next: NextFunction) => {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 15;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     const bought: any = req.query.bought;
     const pendding: any = req.query.pendding;
-    const referenceSite: any = parseInt(req.query.referenceSite as string) || undefined;
-
+    const referenceSite: any = req.query.referenceSite;
     let offset = (page - 1) * limit;
+
     try {
-        log("referenceSite : ", referenceSite);
-        const props: any = {
-            where: generateWhereClause(bought, pendding),
-            include: InnerJoin(referenceSite, limit, offset),
-        }
-        if (referenceSite === undefined) {
-            props.limit = limit;
-            props.offset = offset;
-        }
+        const props: any = {};
+        props.where = generateWhereClause(bought, pendding, referenceSite);
+        props.limit = limit;
+        props.offset = offset;
         const costumers = await db.costumers.findAll(props);
-        res.status(200).json(referenceSite !== undefined ?
-            costumers.slice(offset, offset + limit) : costumers);
+        res.status(200).json(costumers);
     } catch (error) {
         console.log(error);
         next(error);
@@ -99,7 +69,7 @@ export const SaveCostumers = async (req: Request, res: Response, next: NextFunct
 
         const json2csv = new Parser();
         const costumerInstances: CostumersAttrebues[] =
-            await db.costumers.findAll({ where: generateWhereClause(bought, pendding) });
+            await db.costumers.findAll({ where: generateWhereClause(bought, pendding, undefined) });
 
         if (!costumerInstances.length)
             throw new BadRequestError({ code: 404, message: 'Costumers not found', logging: false })

@@ -1,4 +1,4 @@
-npm install;
-rm -rf dist;
-npm run build;
-npm run start;
+# npm install;
+# rm -rf dist;
+# npm run build;
+npm run dev;

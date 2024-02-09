@@ -8,6 +8,7 @@ export interface CostumersAttrebues {
     Email: string;
     referenceSite: string;
     language: string;
+    type: string;
     bought: boolean;
     bought_at: Date;
     pendding: boolean;
@@ -20,7 +21,7 @@ export interface Filters {
     bought: boolean | null;
     pending: boolean | null;
     page: number;
-    referenceSite: number | null;
+    referenceSite: string | null;
 }
 
 type Store = {

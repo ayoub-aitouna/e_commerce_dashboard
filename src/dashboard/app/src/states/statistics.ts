@@ -30,20 +30,29 @@ export interface IStatics {
 
 }
 
+export interface Filters {
+  referenceId: number | null;
+}
 
 type Store = {
   Statics: IStatics;
   WeekState: IWeekState;
   YearState: IYearState;
   latestPurchases: IPurchase[];
-  getStats: () => Promise<void>;
-  getWeekSatate: () => Promise<void>;
-  getYearSatate: () => Promise<void>;
-  getlatestPurchases: () => Promise<void>;
+  getStats: (filters: Filters) => Promise<void>;
+  getWeekSatate: (filters: Filters) => Promise<void>;
+  getYearSatate: (filters: Filters) => Promise<void>;
+  getlatestPurchases: (filters: Filters) => Promise<void>;
 };
 
 
-
+const GetFilters = (filters: Filters) => {
+  let result = '?';
+console.log("filters", filters);
+  if (filters.referenceId !== null && filters.referenceId !== undefined)
+    result += `referenceId=${filters.referenceId}`;
+  return result;
+};
 
 export const StatisticsStore = create<Store>((set: any) => ({
   Statics: {} as IStatics,
@@ -53,38 +62,38 @@ export const StatisticsStore = create<Store>((set: any) => ({
     currentMonthSells: 0,
   } as IYearState,
   latestPurchases: [] as IPurchase[],
-  getStats: async () => {
+  getStats: async (filters: Filters) => {
     await Wrapper(async () => {
       const { data }: { data: IStatics } = await axios.get(
-        `${BaseUrl}/${endpoint}/`,
+        `${BaseUrl}/${endpoint}/${GetFilters(filters)}`,
         Config()
       );
       set({ Statics: data });
     });
   },
-  getWeekSatate: async () => {
+  getWeekSatate: async (filters: Filters) => {
     await Wrapper(async () => {
       const { data }: { data: IWeekState } = await axios.get(
-        `${BaseUrl}/${endpoint}/week`,
+        `${BaseUrl}/${endpoint}/week${GetFilters(filters)}`,
         Config()
       );
       set({ WeekState: { daysOfWeek: data.daysOfWeek, today: data.today } });
     });
   },
-  getYearSatate: async () => {
+  getYearSatate: async (filters: Filters) => {
     await Wrapper(async () => {
       const { data }: { data: IWeekState } = await axios.get(
-        `${BaseUrl}/${endpoint}/year`, Config()
+        `${BaseUrl}/${endpoint}/year${GetFilters(filters)}`, Config()
       );
       set({ YearState: data });
     });
 
   },
-  getlatestPurchases: async () => {
+  getlatestPurchases: async (filters: Filters) => {
     await Wrapper(async () => {
       console.log("getlatestPurchases", Config());
       const { data }: { data: IWeekState } = await axios.get(
-        `${BaseUrl}/${endpoint}/latest-purchases`, Config()
+        `${BaseUrl}/${endpoint}/latest-purchases${GetFilters(filters)}`, Config()
       );
       set({ latestPurchases: data });
     });

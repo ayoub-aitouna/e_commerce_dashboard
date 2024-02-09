@@ -10,15 +10,15 @@ import {
 import Card from "components/card/Card";
 // Custom components
 import BarChart from "components/charts/BarChart";
-import { StatisticsStore } from "states/statistics";
+import { StatisticsStore, Filters } from "states/statistics";
 import {
   barChartOptionsConsumption,
 } from "variables/charts";
 import { MdBarChart } from "react-icons/md";
 import { useEffect } from "react";
 
-export default function WeeklyRevenue(props: { [x: string]: any }) {
-  const { ...rest } = props;
+export default function WeeklyRevenue(props: { [x: string]: any, filter: Filters }) {
+  const { filter, ...rest } = props;
 
   const { WeekState, getWeekSatate } = StatisticsStore((state) => ({
     WeekState: state.WeekState,
@@ -39,9 +39,9 @@ export default function WeeklyRevenue(props: { [x: string]: any }) {
   );
 
   useEffect(() => {
-    getWeekSatate();
+    getWeekSatate(filter);
     console.log("WeeklyRevenue.tsx", WeekState);
-  }, [null]);
+  }, [filter]);
 
   useEffect(() => {
     console.log("WeeklyRevenue.tsx", WeekState);
@@ -86,6 +86,7 @@ export default function WeeklyRevenue(props: { [x: string]: any }) {
       <Box h="240px" mt="auto" w="100%">
         {WeekState.daysOfWeek && WeekState.daysOfWeek.length === 0 ? null : (
           <BarChart
+            key={WeekState.daysOfWeek.reduce((a, b) => a + b, 0)} // Add this line
             chartData={[
               {
                 name: "Sells",

@@ -98,6 +98,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
     }, [references])
 
     const handlePopUp = (row: ReferenceAttributes, Type: any = "EDIT") => {
+        console.log("row", row);
         setPop({ ...PopUp, isOpen: true, row: row, Type: Type });
     }
 
@@ -333,7 +334,9 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                 dns: "",
                                 basic_price: 15.0,
                                 premuim_price: 15.0,
-                                gold_price: 15.0, created_at: new Date()
+                                gold_price: 15.0,
+                                elit_price: 15.0,
+                                created_at: new Date()
                             } as ReferenceAttributes, "INSERT")
                         }}
                     />

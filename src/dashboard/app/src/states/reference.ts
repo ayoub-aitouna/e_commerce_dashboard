@@ -2,6 +2,7 @@ import create from 'zustand';
 import axios from 'axios';
 import { BaseUrl } from 'variables/Api';
 import { Config, Wrapper } from "./Token";
+import { ItemContent } from 'components/menu/ItemContent';
 
 export interface ReferenceAttributes {
     id: number;
@@ -55,7 +56,7 @@ export const referenceStore = create<Store>((set: any) => ({
             });
         });
     },
-    
+
     deleteReference: async (id) => {
         await Wrapper(async () => {
             await axios.delete(`${BaseUrl}/reference/${id}`, Config());
@@ -83,7 +84,9 @@ export const referenceStore = create<Store>((set: any) => ({
         await Wrapper(async () => {
             const { data } = await axios.get(
                 `${BaseUrl}/reference/site`, Config());
+       
             set({ referencesSites: data });
+
         });
     }
 }));

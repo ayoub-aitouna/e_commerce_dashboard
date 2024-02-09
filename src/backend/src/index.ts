@@ -28,7 +28,7 @@ app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/product", ProductRouter);
 app.use("/api/v1/costumers", CostumersRouter);
 app.use("/api/v1/reference", ReferenceRouter);
-app.use("/api/v1/statics",  StaticsRouter);
+app.use("/api/v1/statics", StaticsRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send(db);
@@ -46,8 +46,20 @@ db.sequelize.sync({ force: RESET }).then(async () => {
 
 async function setupDatabase() {
   // Replace this with your actual database setup code
-  const RESET = process.env.RESET === 'true';
-  await db.sequelize.sync({ force: RESET });
+  try {
+    const RESET = process.env.RESET === 'true';
+    console.log({
+      MYSQL_DATABASE: process.env.MYSQL_DATABASE,
+      MYSQL_USER: process.env.MYSQL_USER,
+      MYSQL_PASSWORD: process.env.MYSQL_PASSWORD,
+      MYSQL_HOST: process.env.MYSQL_HOST,
+      RESET
+    });
+    await db.sequelize.sync({ force: RESET });
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+
 }
 
 async function seedDatabase() {
@@ -61,7 +73,7 @@ async function seedDatabase() {
   await seedDatabase();
 
 
-  
+
   app.listen(port, () => {
     console.log(`[server]: Server is running at http://localhost:${port}`);
   });

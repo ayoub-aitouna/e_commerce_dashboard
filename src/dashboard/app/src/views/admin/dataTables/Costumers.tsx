@@ -78,11 +78,11 @@ export default function Costumers() {
                     <Select
                         placeholder="Reference Site"
                         value={Filter.referenceSite}
-                        onChange={(e) => setFilter((v) => ({ ...v, referenceSite: parseInt(e.target.value as string) } as Filters))}
+                        onChange={(e) => setFilter((v) => ({ ...v, referenceSite: e.target.value } as Filters))}
                     >
                         {
                             referencesSites.map((ref: IreferenceSite) => {
-                                return <option value={ref.id}>{new URL(ref.site).hostname}</option>
+                                return <option value={ref.site}>{new URL(ref.site).hostname}</option>
                             })
                         }
                     </Select>

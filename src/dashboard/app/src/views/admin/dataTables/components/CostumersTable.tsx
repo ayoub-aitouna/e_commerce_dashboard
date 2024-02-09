@@ -12,13 +12,10 @@ import {
 
 // Custom components
 import Card from 'components/card/Card';
-import Menu from 'components/menu/MainMenu';
 import { ParseDate } from 'utils/Dateparser';
 
 
 import { CostumersAttrebues } from 'states/costumers';
-import { DownloadIcon } from '@chakra-ui/icons';
-import { title } from 'process';
 
 const columnHelper = createColumnHelper<CostumersAttrebues>();
 
@@ -40,6 +37,25 @@ export default function ColumnTable(props: { tableData: any, Title?: String | un
 					fontSize={{ sm: '10px', lg: '12px' }}
 					color='gray.400'>
 					Email
+				</Text>
+			),
+			cell: (info: any) => (
+				<Flex align='center'>
+					<Text color={textColor} fontSize='sm' fontWeight='700'>
+						{info.getValue()}
+					</Text>
+				</Flex>
+			)
+		}),
+		columnHelper.accessor('type', {
+			id: 'type',
+			header: () => (
+				<Text
+					justifyContent='space-between'
+					align='center'
+					fontSize={{ sm: '10px', lg: '12px' }}
+					color='gray.400'>
+					Type
 				</Text>
 			),
 			cell: (info: any) => (

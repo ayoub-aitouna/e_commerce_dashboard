@@ -1,9 +1,11 @@
+import { IpTvType } from "./Product";
 
 export interface CostumersAttrebues {
     id: Number;
     Email: string;
     referenceSite: string;
     language: string;
+    type: IpTvType;
     bought: boolean;
     bought_at: Date;
     pendding: boolean;

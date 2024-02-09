@@ -16,16 +16,16 @@ services:
       - mariadb
   mariadb:
     container_name: mariadb
-    build:
-      context: ./mariadb/.
+    image: mariadb:latest
+    restart: always
     networks:
       - mynetwork
-    expose:
-      - 3306
-    volumes:
-      - "DB:/var/lib/mysql"
     env_file:
       - ./backend/.env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - 3306:3306
 
   dashboard:
     container_name: dashboard
@@ -54,8 +54,7 @@ volumes:
       type: "none"
       o: 'bind'
       device: './src/dashboard/app/'
-  DB:
-
+  mariadb_data:
 
 networks:
   mynetwork:

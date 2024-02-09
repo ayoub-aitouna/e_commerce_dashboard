@@ -170,13 +170,23 @@ export const AddNewProduct = async (
         const productvalues = { iptv_url, type, referenceId } as ProductAttributes;
 
         const result = await db.sequelize.transaction(async (t: any) => {
-            const referenceSite = await db.reference.findByPk(parseInt(referenceId as string) || 0, { transaction: t });
 
+            const referenceSite = await db.reference.findByPk(parseInt(referenceId as string) || 0, { transaction: t });
             const pendding_costumer = await db.costumers.findOne({
-                where: { pendding: true, referenceSite: referenceSite.site },
+                where: {
+                    pendding: true,
+                    referenceSite: referenceSite.site,
+                    type: type
+                },
                 transaction: t,
             });
-
+            const allcostumerPendding = await db.costumers.findAll({
+                where: {
+                    pendding: true,
+                },
+                transaction: t,
+            });
+            console.log("pendding_costumer", pendding_costumer, "allcostumerPendding", allcostumerPendding);
             if (pendding_costumer) {
                 Object.assign(pendding_costumer, {
                     bought: true,
@@ -257,6 +267,7 @@ const CreateCostumer = async (
     bought: boolean,
     pendding: boolean,
     referenceSite: string,
+    type: IpTvType,
     language: string
 ): Promise<CostumersAttrebues> => {
     const costumer: CostumersAttrebues = await db.costumers.create({
@@ -265,6 +276,7 @@ const CreateCostumer = async (
         pendding: pendding,
         referenceSite: referenceSite,
         language: language,
+        type: type,
         bought_at: bought ? new Date() : null,
         pendding_at: pendding ? new Date() : null,
     });
@@ -329,7 +341,7 @@ export const SellProduct = async (
         );
 
         if (!product) {
-            await CreateCostumer(email, false, true, referenceSite, language);
+            await CreateCostumer(email, false, true, referenceSite, selected_plan, language);
             return res.status(200).json({ msg: "pendding" });
         }
 
@@ -356,6 +368,7 @@ export const SellProduct = async (
                 true,
                 false,
                 referenceSite,
+                selected_plan,
                 language
             );
         } else {
