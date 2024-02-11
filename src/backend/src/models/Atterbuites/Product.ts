@@ -10,6 +10,7 @@ export enum IpTvType {
 export interface ProductAttributes {
     id?: number;
     iptv_url: string;
+    extra_iptv_url: string;
     type: IpTvType;
     sold: boolean;
     pendding: boolean;

@@ -298,15 +298,22 @@ export const SellProduct = async (
     next: NextFunction
 ) => {
     try {
-        const { api_token, email, selected_plan, referenceSite, language } =
-            req.body;
+        const {
+            api_token,
+            email,
+            selected_plan,
+            referenceSite,
+            language,
+            StripPaymentId
+        } = req.body;
 
         if (
             !Object.values(IpTvType).includes(selected_plan) ||
             !api_token ||
             !email ||
             !referenceSite ||
-            !language
+            !language ||
+            !StripPaymentId
         )
             throw new BadRequestError({
                 code: 400,
@@ -325,7 +332,10 @@ export const SellProduct = async (
             where: { api_token: api_token },
         });
 
-        if (count === 0) return res.status(401).json({ msg: "Unauthorized" });
+        const { count: PurchaseWithSameId } = await db.purchases.findAndCountAll({
+            where: { StripPaymentId: StripPaymentId }
+        });
+        if (count === 0 || PurchaseWithSameId > 0) return res.status(401).json({ msg: "Unauthorized" });
 
         const product: ProductAttributes = await db.product.findOne(
             {
@@ -345,8 +355,6 @@ export const SellProduct = async (
             return res.status(200).json({ msg: "pendding" });
         }
 
-        console.log("passed", product);
-        console.log("HERE")
         await SendMailToCostumer(
             email,
             new URL(product.iptv_url),
@@ -359,7 +367,12 @@ export const SellProduct = async (
             { where: { id: product.id } }
         );
         let costumer = await db.costumers.findOne({
-            where: { pendding: true, Email: email, referenceSite: referenceSite, bought: false },
+            where: {
+                pendding: true,
+                Email: email,
+                referenceSite: referenceSite,
+                bought: false
+            },
         });
         ;
         if (!costumer) {
@@ -380,6 +393,7 @@ export const SellProduct = async (
         await db.purchases.create({
             product_id: product.id,
             Costumer_id: costumer.id,
+            StripPaymentId: StripPaymentId
         });
 
         return res.status(200).json({ msg: "ok" });
@@ -389,6 +403,19 @@ export const SellProduct = async (
         next(error);
     }
 };
+
+export const ListAllPurchase = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const result = await db.purchases.findAll();
+        return res.status(200).json(result);
+    } catch (error: any) {
+        next(error);
+    }
+}
 
 export const DeleteProduct = async (
     req: Request,

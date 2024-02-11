@@ -48,14 +48,7 @@ async function setupDatabase() {
   // Replace this with your actual database setup code
   try {
     const RESET = process.env.RESET === 'true';
-    console.log({
-      MYSQL_DATABASE: process.env.MYSQL_DATABASE,
-      MYSQL_USER: process.env.MYSQL_USER,
-      MYSQL_PASSWORD: process.env.MYSQL_PASSWORD,
-      MYSQL_HOST: process.env.MYSQL_HOST,
-      RESET
-    });
-    await db.sequelize.sync({ force: RESET });
+    await db.sequelize.sync({ force: RESET, alter: true });
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }

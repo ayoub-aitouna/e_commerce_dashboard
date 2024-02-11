@@ -8,6 +8,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
   class Product extends Model<ProductAttributes> implements ProductAttributes {
     id!: number;
     iptv_url!: string;
+    extra_iptv_url!: string;
     type!: IpTvType;
     sold!: boolean;
     solded_at?: Date | undefined;
@@ -33,6 +34,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
       },
       iptv_url: {
         type: DataTypes.STRING,
+        allowNull: false,
+      },
+      extra_iptv_url: {
+        type: DataTypes.STRING,
+        defaultValue: "",
         allowNull: false,
       },
       type: {

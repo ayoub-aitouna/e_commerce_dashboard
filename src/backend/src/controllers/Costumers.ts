@@ -39,6 +39,8 @@ export const ListCostumers = async (req: Request, res: Response, next: NextFunct
         props.where = generateWhereClause(bought, pendding, referenceSite);
         props.limit = limit;
         props.offset = offset;
+        // Add order property to sort by createdAt in descending order
+        props.order = [['createdAt', 'DESC']];
         const costumers = await db.costumers.findAll(props);
         res.status(200).json(costumers);
     } catch (error) {

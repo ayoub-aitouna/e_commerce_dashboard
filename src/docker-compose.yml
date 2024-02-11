@@ -24,8 +24,8 @@ services:
       - ./backend/.env
     volumes:
       - mariadb_data:/var/lib/mysql
-    ports:
-      - 3306:3306
+    expose:
+      - 3306
 
   dashboard:
     container_name: dashboard
@@ -46,14 +46,14 @@ volumes:
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './src/backend/'
+      device: './backend/'
 
   dashboard_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './src/dashboard/app/'
+      device: './dashboard/app/'
   mariadb_data:
 
 networks:
