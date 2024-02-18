@@ -13,6 +13,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
     referenceSite!: string;
     language!: string;
     type!: IpTvType;
+    StripPaymentId!: string;
     bought!: boolean;
     bought_at!: Date;
     pendding!: boolean;
@@ -50,6 +51,12 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.ENUM(...Object.values(IpTvType)),
         defaultValue: IpTvType.Basic,
         allowNull: false,
+      },
+      StripPaymentId:
+      {
+        type: DataTypes.STRING,
+        defaultValue: "",
+        allowNull: false
       },
       bought_at: {
         type: DataTypes.DATE,

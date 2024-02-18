@@ -46,14 +46,14 @@ volumes:
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './backend/'
+      device: './src/backend/'
 
   dashboard_volume:
     driver: local
     driver_opts:
       type: "none"
       o: 'bind'
-      device: './dashboard/app/'
+      device: './src/dashboard/app/'
   mariadb_data:
 
 networks:

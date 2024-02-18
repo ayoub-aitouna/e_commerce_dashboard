@@ -6,6 +6,7 @@ export interface CostumersAttrebues {
     referenceSite: string;
     language: string;
     type: IpTvType;
+    StripPaymentId: string;
     bought: boolean;
     bought_at: Date;
     pendding: boolean;

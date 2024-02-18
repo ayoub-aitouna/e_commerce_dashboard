@@ -152,7 +152,7 @@ export const AddNewProduct = async (
 ) => {
     try {
         const { iptv_url, type, referenceId } = req.body;
-
+        let sold = false;
         if (!iptv_url || !Object.values(IpTvType).includes(type) || referenceId === undefined || referenceId === null)
             throw new BadRequestError({
                 code: 400,
@@ -180,46 +180,45 @@ export const AddNewProduct = async (
                 },
                 transaction: t,
             });
-            const allcostumerPendding = await db.costumers.findAll({
-                where: {
-                    pendding: true,
-                },
-                transaction: t,
-            });
-            console.log("pendding_costumer", pendding_costumer, "allcostumerPendding", allcostumerPendding);
+
             if (pendding_costumer) {
-                Object.assign(pendding_costumer, {
-                    bought: true,
-                    pendding: false,
-                    bought_at: new Date(),
-                    pendding_at: null,
+                const { count: PurchaseWithSameId } = await db.purchases.findAndCountAll({
+                    where: { StripPaymentId: pendding_costumer.StripPaymentId }
                 });
+                if (PurchaseWithSameId === 0) {
+                    sold = true;
+                    Object.assign(pendding_costumer, {
+                        bought: true,
+                        pendding: false,
+                        bought_at: new Date(),
+                        pendding_at: null,
+                    });
 
-                await pendding_costumer.save({ transaction: t });
+                    await pendding_costumer.save({ transaction: t });
 
-                Object.assign(productvalues, {
-                    sold: true,
-                    solded_at: new Date(),
-                });
+                    Object.assign(productvalues, {
+                        sold: true,
+                        solded_at: new Date(),
+                    });
 
-                SendMailToCostumer(
-                    pendding_costumer.Email,
-                    new URL(productvalues.iptv_url),
-                    pendding_costumer.language,
-                    pendding_costumer.referenceSite
-                );
-
+                    SendMailToCostumer(
+                        pendding_costumer.Email,
+                        new URL(productvalues.iptv_url),
+                        pendding_costumer.language,
+                        pendding_costumer.referenceSite
+                    );
+                }
             }
 
             const result = await db.product.create(productvalues, { transaction: t });
 
-            if (pendding_costumer) {
+            if (sold) {
                 await db.purchases.create({
                     product_id: result.id,
                     Costumer_id: pendding_costumer.id,
+                    StripPaymentId: pendding_costumer.StripPaymentId
                 }, { transaction: t });
             }
-
             return result;
         });
 
@@ -268,7 +267,8 @@ const CreateCostumer = async (
     pendding: boolean,
     referenceSite: string,
     type: IpTvType,
-    language: string
+    language: string,
+    StripPaymentId: string
 ): Promise<CostumersAttrebues> => {
     const costumer: CostumersAttrebues = await db.costumers.create({
         Email: email,
@@ -277,6 +277,7 @@ const CreateCostumer = async (
         referenceSite: referenceSite,
         language: language,
         type: type,
+        StripPaymentId: StripPaymentId,
         bought_at: bought ? new Date() : null,
         pendding_at: pendding ? new Date() : null,
     });
@@ -313,7 +314,7 @@ export const SellProduct = async (
             !email ||
             !referenceSite ||
             !language ||
-            !StripPaymentId
+            !StripPaymentId || StripPaymentId === ""
         )
             throw new BadRequestError({
                 code: 400,
@@ -351,7 +352,7 @@ export const SellProduct = async (
         );
 
         if (!product) {
-            await CreateCostumer(email, false, true, referenceSite, selected_plan, language);
+            await CreateCostumer(email, false, true, referenceSite, selected_plan, language, StripPaymentId);
             return res.status(200).json({ msg: "pendding" });
         }
 
@@ -382,7 +383,8 @@ export const SellProduct = async (
                 false,
                 referenceSite,
                 selected_plan,
-                language
+                language,
+                StripPaymentId
             );
         } else {
             costumer.bought = true;
