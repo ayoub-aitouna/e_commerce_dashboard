@@ -56,7 +56,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
       {
         type: DataTypes.STRING,
         defaultValue: "",
-        allowNull: false
+        allowNull: false,
+        unique: true,
       },
       bought_at: {
         type: DataTypes.DATE,

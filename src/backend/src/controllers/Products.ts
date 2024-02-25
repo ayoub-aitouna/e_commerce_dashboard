@@ -152,7 +152,6 @@ export const AddNewProduct = async (
 ) => {
     try {
         const { iptv_url, type, referenceId } = req.body;
-        let sold = false;
         if (!iptv_url || !Object.values(IpTvType).includes(type) || referenceId === undefined || referenceId === null)
             throw new BadRequestError({
                 code: 400,
@@ -170,7 +169,6 @@ export const AddNewProduct = async (
         const productvalues = { iptv_url, type, referenceId } as ProductAttributes;
 
         const result = await db.sequelize.transaction(async (t: any) => {
-
             const referenceSite = await db.reference.findByPk(parseInt(referenceId as string) || 0, { transaction: t });
             const pendding_costumer = await db.costumers.findOne({
                 where: {
@@ -182,37 +180,31 @@ export const AddNewProduct = async (
             });
 
             if (pendding_costumer) {
-                const { count: PurchaseWithSameId } = await db.purchases.findAndCountAll({
-                    where: { StripPaymentId: pendding_costumer.StripPaymentId }
+                Object.assign(pendding_costumer, {
+                    bought: true,
+                    pendding: false,
+                    bought_at: new Date(),
+                    pendding_at: null,
                 });
-                if (PurchaseWithSameId === 0) {
-                    sold = true;
-                    Object.assign(pendding_costumer, {
-                        bought: true,
-                        pendding: false,
-                        bought_at: new Date(),
-                        pendding_at: null,
-                    });
 
-                    await pendding_costumer.save({ transaction: t });
+                await pendding_costumer.save({ transaction: t });
 
-                    Object.assign(productvalues, {
-                        sold: true,
-                        solded_at: new Date(),
-                    });
+                Object.assign(productvalues, {
+                    sold: true,
+                    solded_at: new Date(),
+                });
 
-                    SendMailToCostumer(
-                        pendding_costumer.Email,
-                        new URL(productvalues.iptv_url),
-                        pendding_costumer.language,
-                        pendding_costumer.referenceSite
-                    );
-                }
+                SendMailToCostumer(
+                    pendding_costumer.Email,
+                    new URL(productvalues.iptv_url),
+                    pendding_costumer.language,
+                    pendding_costumer.referenceSite
+                );
+
             }
-
             const result = await db.product.create(productvalues, { transaction: t });
-
-            if (sold) {
+            if(pendding_costumer)
+            {
                 await db.purchases.create({
                     product_id: result.id,
                     Costumer_id: pendding_costumer.id,

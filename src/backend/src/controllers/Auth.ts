@@ -25,7 +25,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     } catch (err) {
         res.status(500).json(err);;
     }
-
 }
 
 const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
