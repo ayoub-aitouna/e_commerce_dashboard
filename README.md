@@ -20,7 +20,7 @@ This is a feature-rich e-commerce dashboard developed using Express.js as the ba
 - Responsive Design with Horizon UI
 
 ## Demo
-| ![Image 1](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/auth_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/home_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/products_page.png?raw=true) |
+| ![Image 1](https://github.com/jrayoub/e_commerce_dashboard/blob/devel/demo/auth_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/devel/demo/home_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/devel/demo/products_page.png?raw=true) |
 |---------|---------|---------|
 
 
