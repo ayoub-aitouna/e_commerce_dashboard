@@ -1,31 +1,139 @@
-returncode: 1
-stdout:
-> e_commerce_dashboard@1.0.0 start /home/ipshqxog/backend
-> node dist/index.js
-stderr:
-npm WARN lifecycle The node binary used for scripts is /home/ipshqxog/nodevenv/backend/14/bin/node but npm is using /opt/alt/alt-nodejs14/root/usr/bin/node itself. Use the `--scripts-prepend-node-path` option to include the path for the node binary npm was executed with.
-/home/ipshqxog/backend/node_modules/sequelize/lib/sequelize.js:192
-        throw new Error(`The dialect ${this.getDialect()} is not supported. Supported dialects: mssql, mariadb, mysql, oracle, postgres, db2 and sqlite.`);
-        ^
+# E-Commerce Dashboard
 
-Error: The dialect localhost is not supported. Supported dialects: mssql, mariadb, mysql, oracle, postgres, db2 and sqlite.
-    at new Sequelize (/home/ipshqxog/backend/node_modules/sequelize/lib/sequelize.js:192:15)
-    at Object.<anonymous> (/home/ipshqxog/backend/dist/models/index.js:15:17)
-    at Module._compile (internal/modules/cjs/loader.js:1085:14)
-    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1114:10)
-    at Module.load (internal/modules/cjs/loader.js:950:32)
-    at Function.Module._load (internal/modules/cjs/loader.js:790:12)
-    at Module.require (internal/modules/cjs/loader.js:974:19)
-    at require (internal/modules/cjs/helpers.js:101:18)
-    at Object.<anonymous> (/home/ipshqxog/backend/dist/index.js:31:34)
-    at Module._compile (internal/modules/cjs/loader.js:1085:14)
-npm ERR! code ELIFECYCLE
-npm ERR! errno 1
-npm ERR! e_commerce_dashboard@1.0.0 start: `node dist/index.js`
-npm ERR! Exit status 1
-npm ERR! 
-npm ERR! Failed at the e_commerce_dashboard@1.0.0 start script.
-npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+This is a feature-rich e-commerce dashboard developed using Express.js as the backend, Sequelize as the ORM, and React as the frontend framework. The dashboard utilizes Horizon UI for a modern and responsive user interface.
 
-npm ERR! A complete log of this run can be found in:
-npm ERR!     /home/ipshqxog/.npm/_logs/2024-01-29T18_13_52_095Z-debug.log
+## Table of Contents
+
+- [Features](#features)
+- [Demo](#demo)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+
+## Features
+
+- User Authentication and Authorization
+- Product Management (CRUD)
+- Order Management
+- Sales Analytics and Reporting
+- Responsive Design with Horizon UI
+
+## Demo
+| ![Image 1](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/auth_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/home_page.png?raw=true) | ![Image 2](https://github.com/jrayoub/e_commerce_dashboard/blob/main/demo/products_page.png?raw=true) |
+|---------|---------|---------|
+
+
+## Technologies Used
+
+- **Backend**: Express.js
+- **ORM**: Sequelize
+- **Database**: PostgreSQL
+- **Frontend**: React.js
+- **UI Template**: Horizon UI
+- **Authentication**: JWT
+
+## Installation
+
+### Prerequisites
+
+- Docker
+- Docker-compose
+
+### How to Setup
+
+1. Clone the repository
+
+   ```sh
+   git clone https://github.com/ayoub-aitouna/e_commerce_dashboard.git
+   cd e_commerce_dashboard
+   ```
+
+2. Configure the database
+   - Create a `.env` file in the backend directory
+   - Add the following configuration
+     ```env
+        RESET=false
+        PORT=8080
+
+        #admin credentials
+        admin_email=admin@iptv.com
+        admin_pass=123456
+        api_token=A1f3cCbd988Pdf7180a510b-51e462ae5654837c87f00392b9d2b72d-35ea6a5
+
+        #jwt tokens
+        ACCESS_TOKEN_SECRET=<your_jwt_secret>
+        REFRESH_TOKEN_SECRET=<your_refresh_jwt_secret>
+
+        #mailer credentials
+        MAILER_HOST=<mailer host>
+        MAILER_USER=<mailer user>
+        MAILER_PASS=<mailer pass>
+
+        #sms credentials
+        PHONE_NUMBER=+212600000000
+
+
+        #mysql credentials
+        MYSQL_DATABASE=<your_database_name>
+        MYSQL_ROOT_PASSWORD=<your_database_root_pass>
+        MYSQL_USER=<your_database_user>
+        MYSQL_PASSWORD=<your_database_pass>
+        MYSQL_HOST=<your_database_host>
+
+     ```
+
+3. Start the app
+   ```sh
+   make
+   ```
+
+## Usage
+
+- Navigate to `http://localhost:3000` to view the dashboard.
+- Use the login credentials to access various features of the dashboard.
+
+## Project Structure
+
+```
+e_commerce_dashboard
+├── src
+| ├── backend
+| |   ├── plugins
+| │   ├── public
+| │   ├── src
+| │   |  ├── config
+| │   |  ├── controllers
+| │   |  ├── errors
+| │   |  ├── languages
+| │   |  ├── mailer
+| │   |  ├── middleware
+| │   |  ├── migrations
+| │   |  ├── models
+| │   |  ├── routes
+| │   |  ├── seeders
+| │   |  ├── types
+| │   |  ├── utils
+| │   |  └── index.ts
+| │   ├── .env
+| │   └── Dockerfile
+| └── dashboard
+|    ├── app
+|    |  ├── public
+|    |  ├── src
+|    |  │   ├── assets
+|    |  │   ├── components
+|    |  │   ├── contexts
+|    |  │   ├── layouts
+|    |  │   ├── state
+|    |  │   ├── theme
+|    |  │   ├── types
+|    |  │   ├── utils
+|    |  │   ├── variables
+|    |  │   ├── views
+|    |  │   └── index.ts
+|    |  └── Dockerfile
+|    └── docker-compose.yml
+├── Makefile
+└── README.md
+```

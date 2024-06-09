@@ -60,5 +60,3 @@ networks:
   mynetwork:
     driver: bridge
 
-# /home/aaitouna/e_commerce_dashboard/src
-# /home/aaitouna/e_commerce_dashboard/src
