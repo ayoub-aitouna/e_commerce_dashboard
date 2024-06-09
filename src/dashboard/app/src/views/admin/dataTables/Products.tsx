@@ -61,6 +61,7 @@ export default function Products() {
                     >
                         <option value={IpTvType.Basic as string}>Basic</option>
                         <option value={IpTvType.Gold as string}>Gold</option>
+                        <option value={IpTvType.Elit as string}>Elit</option>
                         <option value={IpTvType.Premium as string}>Premium</option>
                     </Select>
                 </HStack>

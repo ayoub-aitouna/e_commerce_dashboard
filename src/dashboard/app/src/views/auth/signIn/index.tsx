@@ -31,15 +31,13 @@ import Cookies from 'universal-cookie';
 import { User } from "states/user";
 import axios from "axios";
 import { AxiosResponse } from 'axios';
+import { log } from "console";
 
 interface SignInProps {
   message: string;
   loading: boolean;
 }
 
-interface resError {
-  errors: { message: string, context: any; };
-}
 
 function SignIn() {
   // Chakra color mode
@@ -74,6 +72,7 @@ function SignIn() {
       cookies.set(Jwt_Refresh_Cockies_Name, user_data.RefreshToken);
       history.push('/admin');
     } catch (error: any) {
+      console.log(error);
       if (error?.response?.status !== 200)
         setSingInProps({ message: "Incorrect Email or Password", loading: false });
     } finally {

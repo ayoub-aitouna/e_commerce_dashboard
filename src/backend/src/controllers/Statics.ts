@@ -1,77 +1,54 @@
 import { Request, Response, NextFunction } from "express";
 import db from "../models";
 import { Op } from "sequelize";
-import { ProductAttributes, IpTvType } from "../models/Atterbuites/Product";
+import { IpTvType } from "../models/Atterbuites/Product";
+import { PurchasesAttributes } from "../models/Atterbuites/Purchases";
+interface DateStatic {
+  Total: number;
+  Count: number;
+}
 
-const CalculatByQuery = async (query: any) => {
+const CalculatByQuery = async (query: any, referenceId: number | undefined = undefined) => {
   let Total = 0;
-  const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({
-      where: query,
+  const lastMonthPurchases: PurchasesAttributes[] | any =
+    await db.purchases.findAll({
       include: [
         {
-          model: db.reference,
+          model: db.product,
           required: true,
+          where: query,
+          include: [
+            {
+              model: db.reference,
+              required: true,
+              where: referenceId ? { id: referenceId } : {},
+            }
+          ]
         }
       ]
     });
 
-  for (const product of lastMonthProductsInserts) {
-    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
-    switch (product.type) {
+  for (const purchase of lastMonthPurchases) {
+    console.log(purchase.product.reference?.basic_price, purchase.product.reference?.premuim_price, purchase.product.reference?.gold_price);
+    switch (purchase.product.type) {
       case IpTvType.Basic:
-        Total += product.reference?.basic_price || 0;
+        Total += purchase.product.reference?.basic_price || 0;
         break;
       case IpTvType.Premium:
-        Total += product.reference?.premuim_price || 0;
+        Total += purchase.product.reference?.premuim_price || 0;
         break;
       case IpTvType.Gold:
-        Total += product.reference?.gold_price || 0;
+        Total += purchase.product.reference?.gold_price || 0;
+        break;
+      case IpTvType.Elit:
+        Total += purchase.product.reference?.elit_price || 0;
         break;
     }
   }
-  return Total;
-};
-
-const CalculatByQueryAvg = async (query: any) => {
-  let Total = 0;
-
-
-  const lastMonthProductsInserts: ProductAttributes[] =
-    await db.product.findAll({
-      where: query,
-      include: [
-        {
-          model: db.reference,
-          required: true,
-        }
-      ]
-    });
-  if (lastMonthProductsInserts.length === 0)
-    return (0);
-  for (const product of lastMonthProductsInserts) {
-    console.log(product.reference?.basic_price, product.reference?.premuim_price, product.reference?.gold_price);
-    switch (product.type) {
-      case IpTvType.Basic:
-        Total += product.reference?.basic_price || 0;
-        break;
-      case IpTvType.Premium:
-        Total += product.reference?.premuim_price || 0;
-        break;
-      case IpTvType.Gold:
-        Total += product.reference?.gold_price || 0;
-        break;
-    }
-  }
-  return (Total / lastMonthProductsInserts.length).toFixed(1);
-
-};
-
-const GetSDate = (NumberOfDays: number, NumberOMonths: number) => {
-  const date = new Date();
-  date.setDate(date.getDate() - NumberOfDays);
-  date.setMonth(date.getMonth() - NumberOMonths);
-  return date;
+  return {
+    Total: Total,
+    Count: lastMonthPurchases.length
+  } as DateStatic;
 };
 
 export const GetStatics = async (
@@ -79,37 +56,42 @@ export const GetStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
+
   try {
-    let todays = await CalculatByQuery({
+    const TodaysStatics = await CalculatByQuery({
       solded_at: {
-        [Op.gte]: GetSDate(1, 0),
+        [Op.gt]: new Date(new Date().setHours(0, 0, 0, 0)),
       },
-    });
-    let todaysAvg = await CalculatByQueryAvg({
-      solded_at: {
-        [Op.gte]: GetSDate(1, 0),
-      },
-    });
+    }, referenceId ? parseInt(referenceId as string) : undefined);
 
     let thisMonth = await CalculatByQuery({
       solded_at: {
-        [Op.gte]: GetSDate(0, 1),
+        [Op.gte]: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
       },
-    });
+    }, referenceId ? parseInt(referenceId as string) : undefined);
 
     let count = await db.product.count({
       where: {
         sold: false,
       },
+      include: [
+        {
+          model: db.reference,
+          required: true,
+          where: referenceId ? { id: referenceId } : {},
+        }
+      ]
     });
 
     return res.status(200).json({
-      todaysTotalRevenue: todays,
-      thisMonthTotalRevenue: thisMonth,
-      AverageOrderRevenueToday: todaysAvg,
+      todaysTotalRevenue: TodaysStatics.Total,
+      thisMonthTotalRevenue: thisMonth.Total,
+      AverageOrderRevenueToday: TodaysStatics.Count !== 0 ? (TodaysStatics.Total / TodaysStatics.Count).toFixed(2) : 0,
       TotalAvailableProducts: count,
     });
   } catch (error: any) {
+    console.log(error);
     next(error);
   }
 };
@@ -119,6 +101,7 @@ export const GetWeekStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
   // Get the date one week ago
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -132,7 +115,7 @@ export const GetWeekStatics = async (
   } else if (db.sequelize.getDialect() === "mysql") {
     dayOfWeekFunction = db.sequelize.fn(
       "DAYOFWEEK",
-      db.sequelize.col("created_at")
+      db.sequelize.col("`purchases`.`created_at`")
     );
   } else {
     throw new Error("Unsupported database dialect");
@@ -151,10 +134,18 @@ export const GetWeekStatics = async (
       },
       group: [dayOfWeekFunction],
       raw: true,
+      include: [
+        {
+          model: db.product,
+          required: true,
+          attributes: ["referenceId"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+        }
+      ]
     });
     const daysOfWeek = [0, 0, 0, 0, 0, 0, 0];
     counts.forEach((count: any) => {
-      daysOfWeek[count.dayOfWeek as number] =
+      daysOfWeek[count.dayOfWeek as number - 1] =
         parseInt(count.count as string) || 0;
     });
     const today = daysOfWeek[new Date().getDay()];
@@ -170,6 +161,8 @@ export const GetYearStatics = async (
   res: Response,
   next: NextFunction
 ) => {
+
+  const referenceId = req.query.referenceId;
   // Get the date one year ago
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -178,10 +171,10 @@ export const GetYearStatics = async (
   if (db.sequelize.getDialect() === "postgres") {
     monthFunction = db.sequelize.fn(
       "EXTRACT",
-      db.sequelize.literal("MONTH FROM created_at")
+      db.sequelize.literal("MONTH FROM `purchases`.`created_at`")
     );
   } else if (db.sequelize.getDialect() === "mysql") {
-    monthFunction = db.sequelize.fn("MONTH", db.sequelize.col("created_at"));
+    monthFunction = db.sequelize.fn("MONTH", db.sequelize.col("`purchases`.`created_at`"));
   } else {
     throw new Error("Unsupported database dialect");
   }
@@ -199,6 +192,14 @@ export const GetYearStatics = async (
       },
       group: [monthFunction],
       raw: true,
+      include: [
+        {
+          model: db.product,
+          required: true,
+          attributes: ["referenceId"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+        }
+      ]
     });
     const monthsOfYear = Array(12).fill(0);
     counts.forEach((count: any) => {
@@ -218,6 +219,7 @@ export const GetLatestPurchases = async (
   res: Response,
   next: NextFunction
 ) => {
+  const referenceId = req.query.referenceId;
   try {
     const purchases = await db.purchases.findAll({
       include: [
@@ -227,7 +229,8 @@ export const GetLatestPurchases = async (
         },
         {
           model: db.product,
-          attributes: ["type"],
+          where: referenceId ? { referenceId: req.query.referenceId } : {},
+          attributes: ["type", "referenceId"],
         },
       ],
       order: [["created_at", "DESC"]],

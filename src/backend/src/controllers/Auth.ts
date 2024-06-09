@@ -23,9 +23,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             throw new BadRequestError({ code: 403, message: "password is incorrect!", logging: true });
         return res.json(Sign(admin));
     } catch (err) {
-        next(err);
+        res.status(500).json(err);;
     }
-
 }
 
 const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
@@ -49,7 +48,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
         res.json(Sign(admin as AdminAtterbuites));
     } catch (error) {
         console.log(error)
-        next(error);
+        res.status(500).json(error);
     }
 }
 

@@ -4,6 +4,7 @@ export interface ReferenceAttributes {
     dns: string;
     basic_price: number;
     premuim_price: number;
+    elit_price: number;
     gold_price: number;
     created_at: Date;
     updated_at: Date;

@@ -6,14 +6,13 @@ import LineChart from 'components/charts/LineChart';
 import { MdBarChart, MdOutlineCalendarToday } from 'react-icons/md';
 // Assets
 import { lineChartOptionsTotalSpent } from 'variables/charts';
-import { StatisticsStore } from "states/statistics";
+import { StatisticsStore, Filters } from "states/statistics";
 import { useEffect } from "react";
 
-export default function TotalSpent(props: { [x: string]: any }) {
-	const { ...rest } = props;
+export default function TotalSpent(props: { [x: string]: any, filter: Filters }) {
+	const { filter, ...rest } = props;
 
 	// Chakra Color Mode
-
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
 	const textColorSecondary = useColorModeValue('secondaryGray.600', 'white');
 	const boxBg = useColorModeValue('secondaryGray.300', 'whiteAlpha.100');
@@ -28,13 +27,10 @@ export default function TotalSpent(props: { [x: string]: any }) {
 	}));
 
 	useEffect(() => {
-		getYearSatate();
-		console.log("YearlyRevenue.tsx", YearState);
-	}, [null]);
-
-	useEffect(() => {
-		console.log("YearlyRevenue.tsx", YearState);
-	}, [YearState]);
+		console.log("YearlyRevenue", filter);
+		getYearSatate(filter);
+		console.log("YearlyRevenue", YearState);
+	}, [filter]);
 
 	return (
 		<Card justifyContent='center' alignItems='center' flexDirection='column' w='100%' mb='0px' {...rest}>
@@ -72,7 +68,9 @@ export default function TotalSpent(props: { [x: string]: any }) {
 				</Flex>
 				<Box minH='260px' minW='75%' mt='auto'>
 					{YearState.monthsOfYear.length !== 0 ?
-						<LineChart chartData={[
+						<LineChart
+						key={YearState.monthsOfYear.reduce((a, b) => a + b, 0)} // Add this line
+						chartData={[
 							{
 								name: 'Total Selles',
 								data: YearState.monthsOfYear,

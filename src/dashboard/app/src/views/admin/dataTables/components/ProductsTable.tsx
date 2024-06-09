@@ -33,7 +33,6 @@ import {
 // Custom components
 import Card from 'components/card/Card';
 import { ProductAttributes, IpTvType, productStore } from 'states/products';
-import { MdUpdate } from 'react-icons/md';
 
 import { ParseDate } from 'utils/Dateparser';
 import { IreferenceSite, referenceStore } from 'states/reference';
@@ -86,10 +85,13 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
     let defaultData = tableData;
 
     const [data, setData] = React.useState(() => [...defaultData]);
-
-    React.useEffect(() => {
+    const LoadData = async () => {
+        await getReferenceSite();
         setData(products)
-        getReferenceSite();
+        console.log("referencesSites ", referencesSites);
+    }
+    React.useEffect(() => {
+        LoadData()
     }, [products])
 
     const handlePopUp = (row: ProductAttributes, Type: any = "EDIT") => {
@@ -130,6 +132,10 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
             return;
         }
 
+    }
+
+    const getReferenceSiteById = (id: number) => {
+        return referencesSites.find((v: any) => v.id === id)?.site
     }
 
     const columns = [
@@ -193,6 +199,33 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                 <Text color={textColor} fontSize='sm' fontWeight='700'>
                     {info.getValue() != undefined ? info.getValue().toString() : "false"}
                 </Text>
+            )
+        }),
+        columnHelper.accessor('referenceId', {
+            id: 'referenceId',
+            header: () => (
+                <Text
+                    justifyContent='space-between'
+                    align='center'
+                    fontSize={{ sm: '10px', lg: '12px' }}
+                    color='gray.400'>
+                    reference
+                </Text>
+            ),
+            cell: (info) => (
+                <Flex align='center' maxWidth={'200px'}>
+                    <Text
+                        color={textColor}
+                        fontSize='sm'
+                        fontWeight='700'
+                        isTruncated
+                        maxWidth="60ch"
+                        title={getReferenceSiteById(info.getValue())}
+                    // Show full text on hover
+                    >
+                        {getReferenceSiteById(info.getValue())}
+                    </Text>
+                </Flex>
             )
         }),
         columnHelper.accessor('solded_at', {
@@ -377,7 +410,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                     <AlertDialogHeader>
                                         {
                                             PopUp.error == null
-                                                ? PopUp.Type == "EDIT" ? "Edit Row" : "Add Row"
+                                                ? PopUp.Type === "EDIT" ? "Edit Row" : "Add Row"
                                                 : <Text color={"red"}>{PopUp.error}</Text>}
                                     </AlertDialogHeader>
                                     <AlertDialogBody>
@@ -418,6 +451,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                                 placeholder="Reference Site"
                                                 value={PopUp.row.referenceId}
                                                 onChange={(e) => {
+                                                    console.log(e.target.value, referencesSites);
                                                     setPop(prevState => ({
                                                         ...prevState,
                                                         row: {
@@ -430,6 +464,7 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                                             >
                                                 {
                                                     referencesSites.map((ref: IreferenceSite) => {
+                                                        console.log("ref", ref);
                                                         return <option value={ref.id}>{new URL(ref.site).hostname}</option>
                                                     })
                                                 }
@@ -487,52 +522,6 @@ export default function ColumnTable(props: { tableData: any, filters?: any }) {
                     </AlertDialogOverlay>
                 </AlertDialog>
             )}
-
-
-            {PopUp.isOpen && PopUp.Type === "UPDATE" && (
-                <AlertDialog isOpen={PopUp.isOpen} leastDestructiveRef={cancelRef} onClose={handleCancel}>
-                    <AlertDialogOverlay>
-                        <AlertDialogContent>
-
-                            {!PopUp.Loading ?
-                                <>
-                                    <AlertDialogHeader>
-                                        {
-                                            PopUp.error == null
-                                                ? "UPDATE DNS"
-                                                : <Text color={"red"}>{PopUp.error}</Text>}
-                                    </AlertDialogHeader>
-                                    <AlertDialogBody>
-                                        <FormControl>
-                                            <FormLabel>New DNS</FormLabel>
-                                            <Input type="text" placeholder='https://www.example.com' value={PopUp.extraData} onChange={(e) => {
-                                                setPop(prevState => ({
-                                                    ...prevState,
-                                                    extraData: e.target.value as string
-                                                }))
-                                            }} />
-                                        </FormControl>
-                                        {/* Add more form fields for other row properties */}
-                                    </AlertDialogBody>
-                                    <AlertDialogFooter>
-                                        <Button colorScheme="blue" onClick={handleSave}>
-                                            Save
-                                        </Button>
-                                        <Button ref={cancelRef} onClick={handleCancel}>
-                                            Cancel
-                                        </Button>
-                                    </AlertDialogFooter>
-                                </>
-                                :
-                                <Flex direction="column" align="center" justify="center" m={10} >
-                                    <Spinner size="lg" />
-                                </Flex>}
-
-                        </AlertDialogContent>
-                    </AlertDialogOverlay>
-                </AlertDialog>
-            )
-            }
 
 
         </Card >

@@ -57,10 +57,10 @@ export const GetReference = async (req: Request, res: Response, next: NextFuncti
 // Create '/reference',
 export const PostReference = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { site, dns, basic_price, premuim_price, gold_price } = req.body;
+        const { site, dns, basic_price, premuim_price, gold_price, elit_price } = req.body;
 
         // Check if all properties are valid
-        if (!site || !dns || !basic_price || !premuim_price || !gold_price)
+        if (!site || !dns || !basic_price || !premuim_price || !gold_price || !elit_price)
             throw new BadRequestError({ message: 'Invalid reference properties' });
         const reference = await db.reference.create(req.body);
         res.status(201).json(reference);

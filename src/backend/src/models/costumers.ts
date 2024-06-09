@@ -1,6 +1,7 @@
 "use strict";
 import { Model } from "sequelize";
 import { CostumersAttrebues } from "./Atterbuites/Costumers";
+import { IpTvType } from "./Atterbuites/Product";
 
 
 module.exports = (sequelize: any, DataTypes: any) => {
@@ -11,6 +12,8 @@ module.exports = (sequelize: any, DataTypes: any) => {
     Email!: string;
     referenceSite!: string;
     language!: string;
+    type!: IpTvType;
+    StripPaymentId!: string;
     bought!: boolean;
     bought_at!: Date;
     pendding!: boolean;
@@ -43,6 +46,18 @@ module.exports = (sequelize: any, DataTypes: any) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+      },
+      type: {
+        type: DataTypes.ENUM(...Object.values(IpTvType)),
+        defaultValue: IpTvType.Basic,
+        allowNull: false,
+      },
+      StripPaymentId:
+      {
+        type: DataTypes.STRING,
+        defaultValue: "",
+        allowNull: false,
+        unique: true,
       },
       bought_at: {
         type: DataTypes.DATE,

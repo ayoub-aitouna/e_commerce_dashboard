@@ -21,6 +21,7 @@ export const Admins = async (): Promise<AdminAtterbuites[]> => {
 
 export const SeedAdminTable = async (db: any, Admins: AdminAtterbuites[]) => {
     try {
+      console.log('Seeding admin data...');
       Admins.map(async (admin) => {
         const existingAdmin = await db.admin.findOne({ where: { email: admin.email } });
         if (!existingAdmin) {

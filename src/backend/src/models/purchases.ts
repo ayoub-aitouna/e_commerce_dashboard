@@ -10,12 +10,13 @@ module.exports = (sequelize: any, DataTypes: any) => {
     Costumer_id!: number;
     created_at!: Date;
     updated_at!: Date;
+    StripPaymentId!: string;
 
     static associate(models: any) {
       // define association here
       Purchases.belongsTo(models.costumers, { foreignKey: 'Costumer_id' });
       Purchases.belongsTo(models.product, { foreignKey: 'product_id' });
-    
+
     }
   }
 
@@ -42,6 +43,11 @@ module.exports = (sequelize: any, DataTypes: any) => {
           model: "costumers",
           key: "id",
         },
+      },
+      StripPaymentId: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+        allowNull: false
       },
       created_at: {
         type: DataTypes.DATE,

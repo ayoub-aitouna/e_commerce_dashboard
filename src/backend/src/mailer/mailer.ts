@@ -126,7 +126,7 @@ export const generateEmailTemplate = async (
             <p class="indint" >${translate("dnsLabel")} ${url}</p>
             `:
             `
-            <p class="indint" >${translate("playlistName")} ${referenceSiteUrl.hostname.split('.')[1]}</p>
+            <p class="indint" >${translate("playlistName")} ${referenceSiteUrl.hostname}</p>
             <p class="indint" >${translate("usernameLabel")} ${username}</p>
             <p class="indint" >${translate("passwordLabel")} ${password}</p>
             <p class="indint" >${translate("hostApiUrlLabel")} ${getBaseUrl(url)}</p>
@@ -138,10 +138,10 @@ export const generateEmailTemplate = async (
                 <p>${translate("helpContact")} ${phone}</p>
                 <p>${translate("customerServiceInfo")}</p>
                 <p>
-                    <span class="contact-icon">&#9742;</span> ${translate("whatsappLabel")} ${phone}
+                    <span class="contact-icon">&#9742;</span> ${translate("whatsappLabel")}
                 </p>
                 <p>
-                    <span class="contact-icon">&#9993;</span> ${translate("emailLabel")} ${email}
+                    <span class="contact-icon">&#9993;</span> ${translate("emailLabel")}
                 </p>
                 <p>${translate("signature")}</p>
                 <p>${translate("teamName")}</p>

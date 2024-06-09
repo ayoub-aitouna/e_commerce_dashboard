@@ -51,7 +51,7 @@ function generateWhereClause(sold: any, type: any) {
     let where = {} as any;
 
     if (sold !== undefined && sold !== null) {
-        where.sold = sold;
+        where.sold = sold === 'true' ? 1 : 0;
     }
 
     if (Object.values(IpTvType).includes(type)) {
@@ -152,7 +152,6 @@ export const AddNewProduct = async (
 ) => {
     try {
         const { iptv_url, type, referenceId } = req.body;
-
         if (!iptv_url || !Object.values(IpTvType).includes(type) || referenceId === undefined || referenceId === null)
             throw new BadRequestError({
                 code: 400,
@@ -171,9 +170,12 @@ export const AddNewProduct = async (
 
         const result = await db.sequelize.transaction(async (t: any) => {
             const referenceSite = await db.reference.findByPk(parseInt(referenceId as string) || 0, { transaction: t });
-
             const pendding_costumer = await db.costumers.findOne({
-                where: { pendding: true, referenceSite: referenceSite.site },
+                where: {
+                    pendding: true,
+                    referenceSite: referenceSite.site,
+                    type: type
+                },
                 transaction: t,
             });
 
@@ -200,16 +202,15 @@ export const AddNewProduct = async (
                 );
 
             }
-
             const result = await db.product.create(productvalues, { transaction: t });
-
-            if (pendding_costumer) {
+            if(pendding_costumer)
+            {
                 await db.purchases.create({
                     product_id: result.id,
                     Costumer_id: pendding_costumer.id,
+                    StripPaymentId: pendding_costumer.StripPaymentId
                 }, { transaction: t });
             }
-
             return result;
         });
 
@@ -257,7 +258,9 @@ const CreateCostumer = async (
     bought: boolean,
     pendding: boolean,
     referenceSite: string,
-    language: string
+    type: IpTvType,
+    language: string,
+    StripPaymentId: string
 ): Promise<CostumersAttrebues> => {
     const costumer: CostumersAttrebues = await db.costumers.create({
         Email: email,
@@ -265,6 +268,8 @@ const CreateCostumer = async (
         pendding: pendding,
         referenceSite: referenceSite,
         language: language,
+        type: type,
+        StripPaymentId: StripPaymentId,
         bought_at: bought ? new Date() : null,
         pendding_at: pendding ? new Date() : null,
     });
@@ -286,15 +291,22 @@ export const SellProduct = async (
     next: NextFunction
 ) => {
     try {
-        const { api_token, email, selected_plan, referenceSite, language } =
-            req.body;
+        const {
+            api_token,
+            email,
+            selected_plan,
+            referenceSite,
+            language,
+            StripPaymentId
+        } = req.body;
 
         if (
             !Object.values(IpTvType).includes(selected_plan) ||
             !api_token ||
             !email ||
             !referenceSite ||
-            !language
+            !language ||
+            !StripPaymentId || StripPaymentId === ""
         )
             throw new BadRequestError({
                 code: 400,
@@ -313,7 +325,10 @@ export const SellProduct = async (
             where: { api_token: api_token },
         });
 
-        if (count === 0) return res.status(401).json({ msg: "Unauthorized" });
+        const { count: PurchaseWithSameId } = await db.purchases.findAndCountAll({
+            where: { StripPaymentId: StripPaymentId }
+        });
+        if (count === 0 || PurchaseWithSameId > 0) return res.status(401).json({ msg: "Unauthorized" });
 
         const product: ProductAttributes = await db.product.findOne(
             {
@@ -329,12 +344,10 @@ export const SellProduct = async (
         );
 
         if (!product) {
-            await CreateCostumer(email, false, true, referenceSite, language);
+            await CreateCostumer(email, false, true, referenceSite, selected_plan, language, StripPaymentId);
             return res.status(200).json({ msg: "pendding" });
         }
 
-        console.log("passed", product);
-        console.log("HERE")
         await SendMailToCostumer(
             email,
             new URL(product.iptv_url),
@@ -347,7 +360,12 @@ export const SellProduct = async (
             { where: { id: product.id } }
         );
         let costumer = await db.costumers.findOne({
-            where: { pendding: true, Email: email, referenceSite: referenceSite, bought: false },
+            where: {
+                pendding: true,
+                Email: email,
+                referenceSite: referenceSite,
+                bought: false
+            },
         });
         ;
         if (!costumer) {
@@ -356,7 +374,9 @@ export const SellProduct = async (
                 true,
                 false,
                 referenceSite,
-                language
+                selected_plan,
+                language,
+                StripPaymentId
             );
         } else {
             costumer.bought = true;
@@ -367,6 +387,7 @@ export const SellProduct = async (
         await db.purchases.create({
             product_id: product.id,
             Costumer_id: costumer.id,
+            StripPaymentId: StripPaymentId
         });
 
         return res.status(200).json({ msg: "ok" });
@@ -376,6 +397,19 @@ export const SellProduct = async (
         next(error);
     }
 };
+
+export const ListAllPurchase = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const result = await db.purchases.findAll();
+        return res.status(200).json(result);
+    } catch (error: any) {
+        next(error);
+    }
+}
 
 export const DeleteProduct = async (
     req: Request,
@@ -403,7 +437,7 @@ export const SearchProduct = async (
         const products = await db.product.findAll({
             where: searchQuery
                 ? {
-                    [Op.or]: [{ iptv_url: { [Op.iLike]: `%${searchQuery}%` } }],
+                    [Op.or]: [{ iptv_url: { [Op.like]: `%${searchQuery}%` } }],
                 }
                 : {},
         });
