@@ -1,0 +1,67 @@
+<?php
+// Start the session
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-11483908920"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-11483908920');
+</script>
+
+
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Thank you</title>
+</head>
+<body class="bg-light px-3" >
+    <?php
+    include('insertpayeduser.php');
+
+    ?>
+    <div class="vh-100 d-flex justify-content-center align-items-center">
+        <div class="card col-md-4 bg-white shadow-md p-5">
+            <div class="mb-4 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="text-success" width="75" height="75"
+                    fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path
+                        d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                </svg>
+            </div>
+            <div class="text-center">
+                <h1>Merci pour le paiement !</h1>
+                <p >Suite à votre paiement, vous recevrez vos informations de connexion par e-mail dans un délai de moins de 10 minutes  </p>
+                <p class="bg-warning  p-3 rounded">n'oubliez pas de vérifier votre boîte spam s'il vous plaît</p>
+                <p class="bg-info  p-3 rounded">veuillez noter que dans certains cas particuliers, les codes arriveront à votre email dans environ 2 à 4 heures</p>
+                <p>(si vous avez besoin d'aide, vous pouvez nous contacter à notre email :tvluxry@gmail.com) ou par WhatsApp +447476214687 .</p>
+                
+                
+                <a href="#link" class="btn btn-outline-success" onclick=" relocate_home()">Page D'accueil</a>
+                <script>
+                    function relocate_home()
+                    {
+                         location.href = "https://tv-luxury.com";
+                    } 
+                </script>
+            </div>
+        </div>
+
+
+
+
+    
+</body>
+</html>
